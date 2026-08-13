@@ -1,0 +1,33 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+venv/
+.venv/
+env/
+.env
+.env.*
+!*.env.example
+
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/

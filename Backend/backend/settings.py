@@ -66,7 +66,7 @@ DATABASES = {
         'NAME': 'dashboard_DSA_MENTORE',
         'USER': 'aditya',
         'PASSWORD': 'aditya',
-        'HOST': 'localhost',
+        'HOST': 'database',
         'PORT': '5432',
     }
 }
