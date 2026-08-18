@@ -20,7 +20,7 @@ export default function Login(){
             {username , password}
         ) ; 
         localStorage.setItem("accessToken",response.data.access)
-    localStorage.setItem("refreshToken", response.data.refresh)
+        localStorage.setItem("refreshToken", response.data.refresh)
         navigate("/dashboard")
     } catch(err){
         if (err.response?.status == 401){
