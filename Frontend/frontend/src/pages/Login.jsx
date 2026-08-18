@@ -24,7 +24,7 @@ export default function Login(){
         navigate("/dashboard")
     } catch(err){
         if (err.response?.status == 401){
-            setError("Invalid username or password") , 
+            setError("Invalid username or password");
         }
         else {
             setError("could not connet to the server.") 
@@ -68,5 +68,4 @@ export default function Login(){
     </main>
   );
 }
-
 
