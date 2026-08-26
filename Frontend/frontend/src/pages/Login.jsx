@@ -1,13 +1,21 @@
-import { useState } from "react";
+import {useState } from "react";
 import {useNavigate } from "react-router-dom";
 import axios from "axios" ; 
-
+import RegisterUser from "./Register_user";
+import Logout from "./Logout";
 export default function Login(){
-    const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);  
   const navigate = useNavigate() ; 
+  
+  const handelRegister = ()=>{
+    navigate('/register')
+  }
+  const handel_logout = ()=>{
+    navigate('/logout')
+  }
   
   async function handleSubmit(event){
     event.preventDefault()
@@ -65,6 +73,8 @@ export default function Login(){
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
+      <button type="button" onClick={handelRegister}>Create new user </button>
+      <button type="button" onClick={handel_logout}>Logout</button>
     </main>
   );
 }
