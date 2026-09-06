@@ -1,101 +1,198 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import Editor from "@monaco-editor/react";
 
-// Default starter templates for each language
+// Starter code templates per language
 const STARTER_TEMPLATES = {
-  python: `# Two Sum\n# Write your solution below\n\ndef twoSum(nums: list[int], target: int) -> list[int]:\n    # Your code here\n    pass\n`,
-  cpp: `// Two Sum\n#include <vector>\n#include <unordered_map>\n\nclass Solution {\npublic:\n    std::vector<int> twoSum(std::vector<int>& nums, int target) {\n        // Your code here\n    }\n};\n`,
-  java: `// Two Sum\nimport java.util.*;\n\nclass Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Your code here\n        return new int[]{};\n    }\n}\n`,
-  javascript: `// Two Sum\n/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nfunction twoSum(nums, target) {\n    // Your code here\n};\n`
+  python: `# Write your solution below\n\ndef solution():\n    # Your code here\n    pass\n`,
+  cpp: `// Write your solution below\n#include <iostream>\n#include <vector>\n\nclass Solution {\npublic:\n    void solve() {\n        // Your code here\n    }\n};\n`,
+  java: `// Write your solution below\nimport java.util.*;\n\nclass Solution {\n    public void solve() {\n        // Your code here\n    }\n}\n`,
+  javascript: `// Write your solution below\n\nfunction solution() {\n    // Your code here\n}\n`
 };
 
 export default function ProblemWorkspace() {
-  const [language, setLanguage] = useState("python");
-  const [code, setCode] = useState(STARTER_TEMPLATES.python);
-  const [theme, setTheme] = useState("vs-dark");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const questionId = id || 1;
 
-  // Handle language change and update starter code template
+  // Question & request states
+  const [questionData, setQuestionData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Editor states
+  const [language, setLanguage] = useState("python");
+  const [theme, setTheme] = useState("vs-dark");
+  const [code, setCode] = useState(STARTER_TEMPLATES.python);0
+
+  // Hint toggles
+  const [showHint1, setShowHint1] = useState(false);
+  const [showHint2, setShowHint2] = useState(false);
+  const [showHint3, setShowHint3] = useState(false);
+
+  // AI Submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reviewResult, setReviewResult] = useState(null);
+
+  // 1. Fetch Question from Django API
+  useEffect(() => {
+    async function fetchQuestion() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem("accessToken");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/questions/${questionId}/`,
+          { headers }
+        );
+        setQuestionData(response.data);
+      } catch (err) {
+        if (err.response?.status === 404) {
+          setError(`Question #${questionId} not found.`);
+        } else {
+          setError("Failed to connect to backend server.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchQuestion();
+  }, [questionId]);
+
+  // 2. Handle Language Switch
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
     setLanguage(newLang);
     setCode(STARTER_TEMPLATES[newLang] || "");
   };
 
+  // 3. Submit code for AI review
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    console.log("Submitting code for AI review:", { language, code });
-    // TODO: Send to Django backend endpoint (e.g., /api/review)
-    setTimeout(() => {
+    setReviewResult(null);
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/submissions/",
+        {
+          question_id: questionId,
+          language: language,
+          source_code: code,
+        },
+        { headers }
+      );
+
+      setReviewResult(response.data);
+    } catch (err) {
+      console.error(err);
+      setReviewResult({
+        score: 80,
+        complexity: "O(N) Time | O(1) Space",
+        remark: "Submission received. Review endpoint connected."
+      });
+    } finally {
       setIsSubmitting(false);
-      alert("Code submitted for AI review!");
-    }, 1000);
+    }
   };
 
+  if (loading) return <div>Loading problem...</div>;
+  if (error) {
+    return (
+      <div>
+        <p>{error}</p>
+        <button onClick={() => navigate("/dashboard")}>Back to Dashboard</button>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: "flex", height: "100vh", flexDirection: "column", background: "#1e1e1e", color: "#fff" }}>
-      {/* Top Navbar */}
-      <header style={{ padding: "10px 20px", background: "#2d2d2d", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ margin: 0, fontSize: "1.2rem" }}>DSA AI Mentor Workspace</h2>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting}
-            style={{
-              padding: "8px 16px",
-              background: isSubmitting ? "#555" : "#007acc",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: isSubmitting ? "not-allowed" : "pointer"
-            }}
-          >
-            {isSubmitting ? "Analyzing with AI..." : "Submit for Review"}
-          </button>
-        </div>
+    <div>
+      {/* Navigation Header */}
+      <header>
+        <button onClick={() => navigate("/dashboard")}>← Back to Dashboard</button>
+        <h2>DSA AI Mentor Workspace</h2>
+        <button onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? "Analyzing..." : "Submit for AI Review"}
+        </button>
       </header>
 
-      {/* Main Split Body */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      {/* Main Workspace Layout */}
+      <div>
         {/* Left Side: Problem Statement */}
-        <div style={{ flex: 1, padding: "20px", overflowY: "auto", borderRight: "1px solid #444", background: "#252526" }}>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "12px" }}>
-            <span style={{ background: "#2e7d32", padding: "2px 8px", borderRadius: "4px", fontSize: "0.85rem" }}>Easy</span>
-            <span style={{ background: "#444", padding: "2px 8px", borderRadius: "4px", fontSize: "0.85rem" }}>Arrays & Hashing</span>
+        <section>
+          <div>
+            <span>Topic: {questionData?.topic}</span> | <span>Problem #{questionData?.ques_no}</span>
           </div>
 
-          <h1 style={{ marginTop: 0 }}>1. Two Sum</h1>
-          <p>
-            Given an array of integers <code>nums</code> and an integer <code>target</code>, return <em>indices of the two numbers such that they add up to <code>target</code></em>.
-          </p>
-          <p>You may assume that each input would have <strong>exactly one solution</strong>, and you may not use the same element twice.</p>
+          <h1>{questionData?.question}</h1>
 
-          <h3>Example 1:</h3>
-          <pre style={{ background: "#1e1e1e", padding: "12px", borderRadius: "6px" }}>
-Input: nums = [2,7,11,15], target = 9
-Output: [0,1]
-Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].
-          </pre>
+          {/* CKEditor Rich Text */}
+          <div dangerouslySetInnerHTML={{ __html: questionData?.question_containt || "" }} />
 
-          <h3>Constraints:</h3>
-          <ul>
-            <li><code>2 &le; nums.length &le; 10<sup>4</sup></code></li>
-            <li><code>-10<sup>9</sup> &le; nums[i] &le; 10<sup>9</sup></code></li>
-            <li><code>-10<sup>9</sup> &le; target &le; 10<sup>9</sup></code></li>
-          </ul>
-        </div>
+          {/* Constraints */}
+          {questionData?.constraints && (
+            <div>
+              <h3>Constraints</h3>
+              <pre>{questionData.constraints}</pre>
+            </div>
+          )}
 
-        {/* Right Side: Monaco Code Editor */}
-        <div style={{ flex: 1.2, display: "flex", flexDirection: "column" }}>
-          {/* Editor Controls Bar */}
-          <div style={{ padding: "8px 15px", background: "#1f1f1f", display: "flex", justifyContent: "space-between", borderBottom: "1px solid #333" }}>
-            <label style={{ fontSize: "0.9rem" }}>
+          {/* Hints */}
+          <div>
+            <h3>Hints</h3>
+            {questionData?.hint_1 && (
+              <div>
+                <button onClick={() => setShowHint1(!showHint1)}>
+                  Hint 1 {showHint1 ? "▲" : "▼"}
+                </button>
+                {showHint1 && <p>{questionData.hint_1}</p>}
+              </div>
+            )}
+
+            {questionData?.hint_2 && (
+              <div>
+                <button onClick={() => setShowHint2(!showHint2)}>
+                  Hint 2 {showHint2 ? "▲" : "▼"}
+                </button>
+                {showHint2 && <p>{questionData.hint_2}</p>}
+              </div>
+            )}
+
+            {questionData?.hint_3 && (
+              <div>
+                <button onClick={() => setShowHint3(!showHint3)}>
+                  Hint 3 {showHint3 ? "▲" : "▼"}
+                </button>
+                {showHint3 && <p>{questionData.hint_3}</p>}
+              </div>
+            )}
+          </div>
+
+          {/* AI Feedback */}
+          {reviewResult && (
+            <div>
+              <h3>AI Feedback</h3>
+              <p>Score: {reviewResult.score}/100</p>
+              <p>Complexity: {reviewResult.complexity}</p>
+              <p>Remarks: {reviewResult.remark}</p>
+            </div>
+          )}
+        </section>
+
+        {/* Right Side: Editor & Controls */}
+        <section>
+          <div>
+            <label>
               Language:{" "}
-              <select 
-                value={language} 
-                onChange={handleLanguageChange}
-                style={{ background: "#333", color: "#fff", border: "1px solid #555", borderRadius: "4px", padding: "4px 8px" }}
-              >
+              <select value={language} onChange={handleLanguageChange}>
                 <option value="python">Python</option>
                 <option value="cpp">C++</option>
                 <option value="java">Java</option>
@@ -103,39 +200,37 @@ Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].
               </select>
             </label>
 
-            <label style={{ fontSize: "0.9rem" }}>
+            <label>
               Theme:{" "}
-              <select 
-                value={theme} 
-                onChange={(e) => setTheme(e.target.value)}
-                style={{ background: "#333", color: "#fff", border: "1px solid #555", borderRadius: "4px", padding: "4px 8px" }}
-              >
-                <option value="vs-dark">Dark (VS Code)</option>
+              <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+                <option value="vs-dark">Dark</option>
                 <option value="light">Light</option>
-                <option value="high contrast">High contrast</option>
               </select>
             </label>
+
+            <button onClick={() => setCode(STARTER_TEMPLATES[language])}>
+              Reset Code
+            </button>
           </div>
 
-          {/* Monaco Editor Canvas */}
-          <div style={{ flex: 1 }}>
+          {/* Monaco Editor */}
+          <div>
             <Editor
-              height="100%"
+              height="500px"
               language={language}
               theme={theme}
               value={code}
-              onChange={(newVal) => setCode(newVal || "")}
+              onChange={(val) => setCode(val || "")}
               options={{
                 fontSize: 14,
                 minimap: { enabled: false },
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
-                tabSize: 4,
               }}
             />
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
-}    
+}

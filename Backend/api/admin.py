@@ -18,7 +18,7 @@ class StatisticsAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class questionModel(admin.ModelAdmin):
-    list_display = ('question_containt','ques_no','topic','question','constraints','hint_1','hint_2','hint_3')
+    list_display = ('question_containt','ques_no','topic','question','constraints','hint_1','hint_2','hint_3','timeLimit','memoryLimit','stdin')
     list_filter = ('ques_no','topic')
     search_fields = ('topic','ques_no','question')
 
