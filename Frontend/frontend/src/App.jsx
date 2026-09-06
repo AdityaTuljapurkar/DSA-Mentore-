@@ -27,6 +27,7 @@ function App() {
       <Route path='/register' element={<RegisterUser/>}/>
       <Route path='/logout' element={<Logout/>}/>
       <Route path='/workspace' element={<ProblemWorkspace/>}/>
+        <Route path='/problem/:id' element={<ProblemWorkspace/>}/>
       </Routes>
      
     </BrowserRouter>  

@@ -36,10 +36,14 @@ class Question(models.Model):
     question = models.TextField()
     question_containt = CKEditor5Field('Content', config_name='extends')
     constraints = models.CharField(max_length=500, blank=True)
+    timeLimit = models.FloatField(blank=False,null=False)
+    memoryLimit = models.IntegerField(blank=False,null=False)
     hint_1 = models.TextField(blank=True)
     hint_2 = models.TextField(blank=True)
     hint_3 = models.TextField(blank=True)
     topic = models.CharField(max_length=150)
+    stdin = models.TextField(blank=True)
+
 
 
     

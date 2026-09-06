@@ -4,6 +4,11 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt 
 from django.views.decorators.http import require_POST 
 import json 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response 
+from django.shortcuts import get_object_or_404
+from .models import Question
+from .serializers import QuestionSerializer
 # Create your views here.
 
 def test_connections(request):
@@ -23,4 +28,14 @@ def register(request):
 
     User.objects.create_user(username=username,password=password)
     return JsonResponse({'message':'Happy learning'} , status = 201 )
+
+@api_view(['GET'])
+def get_question_detail(request,ques_no):
+    question_obj = get_object_or_404(Question,ques_no=ques_no)
+
+    serializer = QuestionSerializer(question_obj)
+    return Response(serializer.data)
     
+@api_view(['POST'])
+def submit_answer(request,ques_no):
+    pass
