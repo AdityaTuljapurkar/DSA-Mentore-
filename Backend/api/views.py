@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Question
 from .serializers import QuestionSerializer
+from django.http import HttpResponse
 # Create your views here.
 
 def test_connections(request):
@@ -38,4 +39,4 @@ def get_question_detail(request,ques_no):
     
 @api_view(['POST'])
 def submit_answer(request,ques_no):
-    pass
+    return JsonResponse({"data":"clicked the seubmit answer"})
