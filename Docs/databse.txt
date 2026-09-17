@@ -1,0 +1,1 @@
+docker compose exec database psql -U aditya -d dashboard_DSA_MENTORE    
