@@ -32,8 +32,9 @@ services:
       database:
         condition: service_healthy
       redis : 
-        condition: service_started
-
+        condition: service_healthy 
+      
+  
   frontend:
     build:
       context: ./Frontend/frontend
@@ -53,9 +54,43 @@ services:
       - "6379:6379"
     volumes : 
       - redis_data:/data 
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
     restart : unless-stopped
+
+  piston-api:
+    image : ghcr.io/engineer-man/piston 
+    container_name : dsa_mentore_piston
+    privileged: true 
+    restart : unless-stopped 
+    volumes : 
+      - piston_packages:/piston/packages
+      - piston_jobs:/tmp/piston/jobs
+    ports:
+      - "2000:2000"
+    
+    mem_limit : 2g 
+    cpus : 4 
+    environment:
+      - PISTON_MAX_CONCURRENT_JOBS=6
+      - PISTON_COMPILE_TIMEOUT=10000
+      - PISTON_RUN_TIMEOUT=5000
+      - PISTON_COMPILE_MEMORY_LIMIT=134217728
+      - PISTON_RUN_MEMORY_LIMIT=134217728
+      - PISTON_MAX_PROCESS_COUNT=64
+      - PISTON_OUTPUT_MAX_SIZE=1024
+
+
 
 
 volumes:
   postgres_data:
   redis_data:
+  piston_packages:
+  piston_jobs:
+
+
