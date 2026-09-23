@@ -11,13 +11,14 @@ const STARTER_TEMPLATES = {
   javascript: `// Write your JavaScript solution below\n\nfunction solution() {\n    \n}\n`
 };
 
- const lANGUAGE_IDs = {
-cpp     :   54 ,
-Python    :71,
-Java      : 62,
-JavaScript : 63,
-C        :50,
- }
+const lANGUAGE_IDs = {
+  cpp: 54,
+  python: 71,
+  java: 62,
+  javascript: 63,
+  c: 50,
+};
+
 export default function ProblemWorkspace() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,8 +35,8 @@ export default function ProblemWorkspace() {
   const [showHint3, setShowHint3] = useState(false);
 
   //Editor States 
-  const [language, setLanguage] = useState("python")
-  const [Theme, setTheme] = useState("vs-dark")
+  const [language, setLanguage] = useState("python");
+  const [Theme, setTheme] = useState("vs-dark");
   const [code, setCode] = useState(STARTER_TEMPLATES.python);
   // AI Submission states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -219,7 +220,7 @@ export default function ProblemWorkspace() {
             {reviewResult && (
   <div>
     <h3>Review & Execution Result:</h3>
-    <pre>{ JSON.stringify(reviewResult.data, null, 2)}</pre>
+    <pre>{ JSON.stringify(reviewResult, null, 2)}</pre>
   </div>
 )}
         </section>

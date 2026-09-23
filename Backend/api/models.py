@@ -11,9 +11,8 @@ def get_ist_now():
     return timezone.now().astimezone(IST)
 class UserInfo(models.Model):
     user=models.OneToOneField(User , on_delete=models.CASCADE)
-    user = models.CharField(max_length=50)
     user_streak = models.IntegerField(default=0)
-    last_activity = models.DateTimeField(default=get_ist_now)
+    last_activity = models.DateTimeField(default=get_ist_now,null=True,blank=True)
     
 class Dashboard(models.Model):
     sr_no = models.AutoField(primary_key=True)
@@ -43,6 +42,23 @@ class Question(models.Model):
     hint_3 = models.TextField(blank=True)
     topic = models.CharField(max_length=150)
     stdin = models.TextField(blank=True)
+
+class Submitted_question(models.Model):
+    question_no = models.ForeignKey(Question,on_delete=models.CASCADE)
+    language = models.CharField(max_length=10)
+    source_code =  models.TextField()
+    stdin  = models.TextField()
+    stdout = models.TextField()
+    memory = models.CharField(max_length = 50)
+    cpu_time = models.CharField(max_length = 50)
+    user_id = models.ForeignKey(UserInfo,on_delete=models.CASCADE)
+    
+    
+    
+    
+      
+
+
 
 
 

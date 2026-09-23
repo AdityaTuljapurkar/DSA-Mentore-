@@ -6,3 +6,4 @@ djangorestframework-simplejwt==5.5.1
 django-ckeditor-5==0.2.20
 redis==5.0.8
 django-redis==5.4.0
+requests==2.32.3
