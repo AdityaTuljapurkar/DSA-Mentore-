@@ -117,16 +117,21 @@ def submit_answer(request,ques_no):
     }
 
     try : 
-#   "version": "3.12.0"
+    #   "version": "3.12.0"
         response = requests.post(PISTON_ENDPOINT,json=payload,timeout=15)
         result_data = response.json()    
+        run_data = result_data.get("run")
         print(result_data)
+
         # saving the response into the database 
         try:
             save_submission_to_db(ques_no, request.user, source_code, result_data)
         except Exception as e:
             print(f"[DB SAVE ERROR] failed to save data into database: {e}")
-        return Response(result_data, status=status.HTTP_200_OK)
+        if run_data.get("code") ==1 : 
+            return Response({'error':f"{run_data.get("stderr")}"}, status=status.HTTP_200_OK)
+        else : 
+            return Response({"message":f"{run_data.get("output")}"},status=status.HTTP_202_ACCEPTED)     
 
     except requests.exceptions.Timeout as e: 
         return Response({"error :"f"Exicution Engine timeout while waiting for response {str(e)}"},status=status.HTTP_504_GATEWAY_TIMEOUT)
@@ -156,6 +161,14 @@ def save_submission_to_db(ques_no, user, source_code, exicution_result):
             cpu_time=cpu_time,
             user_id=user_obj
         )
+        # ----------savving InFO to redis 
+        username = user.username 
+        QUESTION_KEY = f"{username}:{ques_no}:source_code"
+        RESULT_KEY = f"{username}:{ques_no}:result"
+        # cache timeout for 3 days  
+        cache.set(QUESTION_KEY,source_code,timeout=259200)
+        cache.set(RESULT_KEY,exicution_result,timeout=259200)
+        print(f"[REDIS CACHED] saved {QUESTION_KEY} and {RESULT_KEY}")
         return submission
 
     except UserInfo.DoesNotExist:
@@ -167,3 +180,31 @@ def save_submission_to_db(ques_no, user, source_code, exicution_result):
     except Exception as e:
         print(f"[DB SAVE ERROR]: Failed to persist submission: {e}")
         return None
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_cache_code(request, ques_no):
+    username = request.user.username
+    QUESTION_KEY = f"{username}:{ques_no}:source_code"
+
+    # 1. Try Redis (Cache HIT)
+    cached_code = cache.get(QUESTION_KEY)
+    if cached_code is not None:
+        print(f"[CACHE HIT]: {QUESTION_KEY}")
+        return Response({"source_code": cached_code}, status=status.HTTP_200_OK)
+
+    # 2. Cache MISS -> Try PostgreSQL
+    submission = Submitted_question.objects.filter(
+        user_id=request.user,
+        ques_no=ques_no
+    ).order_by('-id').first()
+
+    if submission:
+        cache.set(QUESTION_KEY, submission.source_code, timeout=259200)
+        print(f"[CACHE MISS -> DB HIT]: Cached {QUESTION_KEY}")
+        return Response({"source_code": submission.source_code}, status=status.HTTP_200_OK)
+
+    # 3. No code found -> frontend loads STARTER_TEMPLATES
+    return Response({"source_code": None}, status=status.HTTP_200_OK)
+
+
+
