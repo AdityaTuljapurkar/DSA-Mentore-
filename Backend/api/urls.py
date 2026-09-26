@@ -8,5 +8,6 @@ urlpatterns = [
     path("api/register",views.register , name="register"),
     path("api/test", views.test_connections, name="test-connections"),
     path("api/questions/<int:ques_no>/",views.get_question_detail,name='question_detail'),
-    path('api/submissions/<int:ques_no>',views.submit_answer,name='submit_answer')  
+    path('api/submissions/<int:ques_no>',views.submit_answer,name='submit_answer'),
+    path("api/cache_source_code/<int:ques_no>",views.get_cache_code,name="cache_source_code")
 ]

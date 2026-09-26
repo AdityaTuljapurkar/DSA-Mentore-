@@ -11,7 +11,7 @@ def get_ist_now():
     return timezone.now().astimezone(IST)
 class UserInfo(models.Model):
     user=models.OneToOneField(User , on_delete=models.CASCADE)
-    user_streak = models.IntegerField(default=0)
+    user_streak = models.IntegerField(default=0)    
     last_activity = models.DateTimeField(default=get_ist_now,null=True,blank=True)
     
 class Dashboard(models.Model):
@@ -51,18 +51,6 @@ class Submitted_question(models.Model):
     stdout = models.TextField()
     memory = models.CharField(max_length = 50)
     cpu_time = models.CharField(max_length = 50)
-    user_id = models.ForeignKey(UserInfo,on_delete=models.CASCADE)
-    
-    
-    
-    
-      
-
-
-
-
+    user_id = models.ForeignKey(UserInfo,on_delete=models.CASCADE)  
 
     
-    
-
-

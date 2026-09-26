@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Editor from "@monaco-editor/react";
+import { json } from "monaco-editor";
 
 // Starter boilerplate code for each language
 const STARTER_TEMPLATES = {
@@ -67,16 +68,49 @@ export default function ProblemWorkspace() {
       }
     }
 
-    fetchQuestion();
+      fetchQuestion();
+
+    // Fetch user's previously saved code from Redis/DB
+    async function fetchSavedCode() {
+      try {
+        const accessTkn = localStorage.getItem("accessToken");
+        const headers = accessTkn ? { Authorization: `Bearer ${accessTkn}` } : {};
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/cache_source_code/${questionID}`,
+          { headers }
+        );
+        if (response?.data?.source_code != null) {
+          setCode(response.data.source_code);
+        }
+      } catch (err) {
+        console.log("No saved code found, using starter template");
+      }
+    }
+    fetchSavedCode();
   }, [questionID]);
 
 
-  const handleLanguageChange = (e) => {
+// source code template via language 
+  const handleLanguageChange = async (e) => {
     const newLang = e.target.value;
     setLanguage(newLang)
-    setCode(STARTER_TEMPLATES[newLang] || "")
-  }
-
+    try {
+      const accessTkn = localStorage.getItem('accessToken')
+      const header = accessTkn ? {Authorization : `Bearer ${accessTkn}`} : {} ;
+      const response  = await axios.get(`http://127.0.0.1:8000/api/cache_source_code/${questionID}`,{headers:header})
+      if (response?.data.source_code != null){
+        setCode(response.data.source_code);
+      }
+      else {
+        setCode(STARTER_TEMPLATES[newLang] || "");
+      }
+      
+    }
+    catch(error) { 
+        console.log(`found error while submitting the code due to ${error}`)
+      }
+    
+    }
   //code submit 
   const handelSubmit = async () => {
     setIsSubmitting(true)
@@ -101,7 +135,7 @@ export default function ProblemWorkspace() {
       
     }
     catch (err) {
-      setError(` somthing went wrongewrror code : ${err.data}`)
+      setError(` somthing went wrong error code : ${err.data}`)
       console.log(err);
       setReviewResult(null)
     }
@@ -217,12 +251,19 @@ export default function ProblemWorkspace() {
               minimap: { enabled: false },
               automaticLayout: true,
             }} />
-            {reviewResult && (
-  <div>
-    <h3>Review & Execution Result:</h3>
-    <pre>{ JSON.stringify(reviewResult, null, 2)}</pre>
-  </div>
-)}
+            {reviewResult &&(
+  reviewResult.error ? (
+                <div>
+                  <h3>Review & Execution Result:</h3>
+                  <pre>{JSON.stringify(reviewResult.error, null, 2)}</pre>
+                </div>
+              ) : (
+                <div>
+                  <h3>Review & Execution Result:</h3>
+                  <pre>{JSON.stringify(reviewResult.message, null, 2)}</pre>
+                </div>
+              )
+)} 
         </section>
       </main>
     </div>
