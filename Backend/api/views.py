@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+from google import genai
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -15,6 +18,7 @@ import requests
 from rest_framework import status 
 from .models import Question, UserInfo, Submitted_question  
 from rest_framework.permissions import IsAuthenticated
+from api.AI_api import AI_review , AI_question_review
 # Create your views here.
 
 def test_connections(request):
@@ -59,25 +63,6 @@ PISTON_LANGUAGES = {
 }
 
 
-
-
-
-# {
-#   "run": {
-#     "signal": null,
-#     "stdout": "",
-#     "stderr": "  File \"/box/submission/file0.code\", line 4\n    qddqd\n    ^\nIndentationError: expected an indented block after function definition on line 3\n",
-#     "code": 1,
-#     "output": "  File \"/box/submission/file0.code\", line 4\n    qddqd\n    ^\nIndentationError: expected an indented block after function definition on line 3\n",
-#     "memory": 12432000,
-#     "message": "Exited with error status 1",
-#     "status": "RE",
-#     "cpu_time": 34,
-#     "wall_time": 83
-#   },
-#   "language": "python",
-#   "version": "3.12.0"
-# }
 REDIS_ENDPOINT = 'http://localhost:6379/'
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -89,6 +74,7 @@ def submit_answer(request,ques_no):
     stout = request.data.get('stdout',"")
     memory = request.data.get('memory')
     cpu_time = request.data.get('cpu_time')
+    user = request.data.get('user')
 
     
 
@@ -131,7 +117,11 @@ def submit_answer(request,ques_no):
         if run_data.get("code") ==1 : 
             return Response({'error':f"{run_data.get("stderr")}"}, status=status.HTTP_200_OK)
         else : 
-            return Response({"message":f"{run_data.get("output")}"},status=status.HTTP_202_ACCEPTED)     
+            ai_res =  AI_question_review(user, ques_no)     
+            return Response({
+                "message":f'code outout : {run_data.get("output")} \n [AI review] : {ai_res}'
+                
+            }, status = status.HTTP_202_ACCEPTED)
 
     except requests.exceptions.Timeout as e: 
         return Response({"error :"f"Exicution Engine timeout while waiting for response {str(e)}"},status=status.HTTP_504_GATEWAY_TIMEOUT)
@@ -205,6 +195,8 @@ def get_cache_code(request, ques_no):
 
     # 3. No code found -> frontend loads STARTER_TEMPLATES
     return Response({"source_code": None}, status=status.HTTP_200_OK)
+
+
 
 
 
