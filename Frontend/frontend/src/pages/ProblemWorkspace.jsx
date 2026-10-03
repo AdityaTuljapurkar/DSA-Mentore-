@@ -42,6 +42,13 @@ export default function ProblemWorkspace() {
   // AI Submission states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviewResult, setReviewResult] = useState(null);
+  const [aiData, setAiData] = useState(()=>{
+    const saved = 
+    sessionStorage.getItem(`ai_review_${questionID}`) 
+    console.log("stored the AI REVIEW in session storage");
+    
+    return saved ? JSON.parse(saved):null
+  });
 
   useEffect(() => {
     async function fetchQuestion() {
@@ -129,10 +136,13 @@ export default function ProblemWorkspace() {
           language_id : lANGUAGE_IDs[language]
         },
         {headers: header }
+        
       )
+      const AI_review_JSOn = extractReview(response.data)
+      setAiData(AI_review_JSOn)
       setReviewResult(response.data) 
       console.log(`Backend Responed : ${response.data}`);
-      
+      sessionStorage.setItem(`ai_review_${questionID}`,JSON.stringify(AI_review_JSOn))
     }
     catch (err) {
       setError(` somthing went wrong error code : ${err.data}`)
@@ -143,7 +153,33 @@ export default function ProblemWorkspace() {
       setIsSubmitting(false);
     }
   }
+function extractReview(reviewResult){
+  const payload = reviewResult?.message 
+  if (!payload){
+    return null
+  }
+  if (typeof payload === "object"){
+    console.log(payload);
+    
+    return payload
+  }
+  if (typeof payload === "string"){
+    try {
+      
+      data =  JSON.parse(payload)
+      console.log(data);
+      return data
+      
 
+    }
+
+    catch(error){
+      console.log("AI REview ERROR in frontend : ", error);
+       return null;
+      
+    }
+  }
+}
   if (loading) return <div>Loading problem...</div>;
 
   if (error) {
@@ -239,6 +275,9 @@ export default function ProblemWorkspace() {
           <button onClick={handelSubmit} disabled={isSubmitting}>{isSubmitting ? "submitting.." : "submit code"}</button>
 
           {/* monaco editor component */}
+
+
+          
           <Editor
             height={'450px'}
             language={language}
@@ -251,19 +290,16 @@ export default function ProblemWorkspace() {
               minimap: { enabled: false },
               automaticLayout: true,
             }} />
-            {reviewResult &&(
-  reviewResult.error ? (
-                <div>
-                  <h3>Review & Execution Result:</h3>
-                  <pre>{JSON.stringify(reviewResult.error, null, 2)}</pre>
-                </div>
-              ) : (
-                <div>
-                  <h3>Review & Execution Result:</h3>
-                  <pre>{JSON.stringify(reviewResult.message, null, 2)}</pre>
-                </div>
-              )
-)} 
+
+
+{aiData && (
+  <pre>
+    Final review:
+    {"\n"}
+    {JSON.stringify(aiData, null, 2)}
+  </pre>
+)}
+
         </section>
       </main>
     </div>

@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-from google import genai
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -119,9 +118,11 @@ def submit_answer(request,ques_no):
         else : 
             ai_res =  AI_question_review(user, ques_no)     
             return Response({
-                "message":f'code outout : {run_data.get("output")} \n [AI review] : {ai_res}'
-                
-            }, status = status.HTTP_202_ACCEPTED)
+                "message":{
+                    "code_output":run_data.get("output"),
+                    "ai_review":ai_res.data
+                }
+            },status=status.HTTP_202_ACCEPTED)
 
     except requests.exceptions.Timeout as e: 
         return Response({"error :"f"Exicution Engine timeout while waiting for response {str(e)}"},status=status.HTTP_504_GATEWAY_TIMEOUT)

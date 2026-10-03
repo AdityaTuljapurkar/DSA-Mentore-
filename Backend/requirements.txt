@@ -8,4 +8,4 @@ redis==5.0.8
 django-redis==5.4.0
 requests==2.32.3
 python-dotenv==1.0.1
-google-genai
+openai
