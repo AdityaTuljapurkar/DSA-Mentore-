@@ -139,6 +139,8 @@ export default function ProblemWorkspace() {
         
       )
       const AI_review_JSOn = extractReview(response.data)
+      console.log(response.data);
+      
       setAiData(AI_review_JSOn)
       setReviewResult(response.data) 
       console.log(`Backend Responed : ${response.data}`);
@@ -292,13 +294,69 @@ function extractReview(reviewResult){
             }} />
 
 
-{aiData && (
-  <pre>
-    Final review:
-    {"\n"}
-    {JSON.stringify(aiData, null, 2)}
-  </pre>
-)}
+        {
+          aiData && (
+            
+            (()=>{
+
+             
+              const output = aiData?.code_output
+              const review_status = aiData?.ai_review?.message?.review_status || "no data"
+              const summary = aiData?.ai_review?.message?.summary || "no data"
+              const logic_analysis = aiData?.ai_review?.message?.logic_analysis || "no data"
+              const issues = aiData?.ai_review?.message?.issues || "no data"
+              const hints = aiData?.ai_review?.message?.hints || "no data"
+              const next_step = aiData?.ai_review?.message?.next_step || "no data"
+
+              return (
+                <>
+                <pre> <h3>Mother Data : </h3>{JSON.stringify(aiData)}</pre>
+                <pre><h3>review status :</h3>{JSON.stringify(review_status)}</pre>
+                <pre><h3>code output :</h3>{JSON.stringify(output)}</pre>
+                <pre><h3>summary :</h3>{JSON.stringify(summary)}</pre>
+                <pre><h3> logical analysis :</h3>{JSON.stringify(logic_analysis)}</pre>
+<div>
+    <h3>Issues</h3>
+
+    {issues[0] &&
+      Object.entries(issues[0]).map(([key, value]) => (
+        <p key={key}>
+          <strong>{key}:</strong>{" "}
+          {typeof value === "object" && value !== null
+            ? JSON.stringify(value)
+            : String(value)}
+        </p>
+      ))}
+  </div>        
+
+  <div>
+    <h3>Hints</h3>
+
+    {hints[0] &&
+      Object.entries(hints[0]).map(([key, value]) => (
+        <p key={key}>
+          <strong>{key}:</strong>{" "}
+          {typeof value === "object" && value !== null
+            ? JSON.stringify(value)
+            : String(value)}
+        </p>
+      ))}
+    <pre><h2><b>next_step</b>: {JSON.stringify(next_step)}</h2></pre>
+  </div>    
+
+
+
+
+
+                
+                
+                </>
+              )
+
+            })()
+
+          )
+        }
 
         </section>
       </main>
