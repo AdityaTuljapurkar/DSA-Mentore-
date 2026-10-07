@@ -12,4 +12,5 @@ urlpatterns = [
     path("api/cache_source_code/<int:ques_no>",views.get_cache_code,name="cache_source_code"),
     path("api/cache_source_code/<int:ques_no>", views.get_cache_code, name="cache_source_code"),
     path('api/ai/review/<int:ques_no>/', views.AI_question_review, name='ai_review'),
+    path( 'api/fetch_dashboard_data/',view=views.get_dashboard_data,name='get_dashboardData')
 ]

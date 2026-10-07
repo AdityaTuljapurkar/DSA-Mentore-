@@ -318,6 +318,8 @@ function extractReview(reviewResult){
 <div>
     <h3>Issues</h3>
 
+    
+
     {issues[0] &&
       Object.entries(issues[0]).map(([key, value]) => (
         <p key={key}>
@@ -343,14 +345,7 @@ function extractReview(reviewResult){
       ))}
     <pre><h2><b>next_step</b>: {JSON.stringify(next_step)}</h2></pre>
   </div>    
-
-
-
-
-
-                
-                
-                </>
+              </>
               )
 
             })()

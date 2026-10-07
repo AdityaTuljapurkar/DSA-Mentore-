@@ -1,3 +1,220 @@
-export default function Dashboard(){
-   return ( <h1>This is the Dashboard</h1>) 
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios, { Axios } from "axios";
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+
+  // State
+  const [userData, setUserData] = useState({
+    username: "Aditya",
+    streak: 0,
+    totalSolved: 0,
+  });
+  const [questions, setQuestions] = useState([]);
+  const [recentSubmissions, setRecentSubmissions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState([])
+  const [liveTime, setLiveTime] = useState(new Date())
+  const [username, setUsername] = useState("")
+
+  function getliveTime(){
+    useEffect(() => { 
+      const interval =  setInterval(()=>
+        setLiveTime(new Date()),1000
+      )
+    
+      return () => {
+        clearInterval(interval)
+      }
+    }, [])
+    return liveTime
+    
+
+  }
+
+
+  // Fetch dashboard data
+useEffect(() => {
+    const handel_data_fetch = async () => {
+        try {
+            const accessTkn = localStorage.getItem("accessToken");
+
+            const header = accessTkn
+                ? { Authorization: `Bearer ${accessTkn}` }
+                : {};
+
+            const response = await axios.get(
+                "http://127.0.0.1:8000/api/fetch_dashboard_data/",
+                { headers: header }
+            );
+
+            setDashboardData(response.data);
+
+
+            console.log(
+                "[Dashboard Backend Response]",
+                response.data
+                
+            );
+            console.log("usermname", response.data[0].username);
+            setUsername(response.data[0].username)
+            
+
+        } catch (error) {
+            console.log("[dashboard fetch error]", error);
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+
+    handel_data_fetch();
+    
+    
+}, []);
+
+
+
+
+
+  // Filter logic
+  const filteredQuestions = questions.filter((q) => {
+    const matchesSearch = q.question.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTopic = selectedTopic === "all" || q.topic === selectedTopic;
+    return matchesSearch && matchesTopic;
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    navigate("/login");
+  };
+
+  if (loading) {
+    return <div>Loading dashboard...</div>;
+  }
+
+
+
+if (loading) {
+    return <div>Loading dashboard...</div>;
+}
+
+  return (
+    <div>
+      {/* 1. Header / Navigation */}
+      <header>
+        <div>
+          <h2>DSA Mentor</h2>
+        </div>
+        <nav>
+          {
+            username && <h4>
+              <b>
+                User : 
+              </b> {username}
+              
+            </h4>
+          }
+          <button onClick={handleLogout}>Logout</button>
+        </nav>
+      </header>
+
+      <main>
+        {/* 2. Top Stats Overview */}
+        <section>
+          <h2>Overview</h2>
+          <div>
+            <div>
+              <h4>Current Streak</h4>
+              <p>{userData.streak} Days 🔥</p>
+            </div>
+           
+            <div>
+              <h4>Topics Practiced</h4>
+              <p>Arrays, Strings</p>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. Filters & Search Section */}
+        <section>
+          <h2>Problems</h2>
+          <div>
+            <input
+              type="text"
+              placeholder="Search problems..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            <select
+              value={selectedTopic}
+              onChange={(e) => setSelectedTopic(e.target.value)}
+            >
+              ​
+{/* date: "2026-10-05T12:57:01Z"
+​
+​
+question: "gegb"
+​
+​
+remark: "gnnn"
+​
+​
+solution_note: "geg"
+​
+​
+topic: "g" */}
+
+              <option value="all">All Topics</option>
+              <option value="Arrays & Hashing">Arrays & Hashing</option>
+              <option value="Strings">Strings</option>
+              <option value="Linked List">Linked List</option>
+            </select>
+          </div>
+
+          {/* 4. Question Table / List */}
+          <table>
+            <thead>
+              <tr>
+                <th>SR.no</th>
+                <th>Question</th>
+                
+                <th>Topic</th>
+                <th>subtopic</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>remark</th>
+              </tr>
+            </thead>
+            <tbody>
+             {dashboardData.map((item)=>(
+              <tr key={item.sr_no}> 
+      <td>{item.sr_no}</td>
+      <td>{item.question}</td>
+      <td>{item.topic}</td>
+      <td>{item.subtopic || "none"}</td>
+      <td>{new Date(item.date).toLocaleDateString()}</td>
+      <td>{item.status ? "\u2705" : "\u274C"}</td>
+      <td>{item.remark || "no remark yet"}</td>
+
+              </tr>
+
+
+             ))}
+              
+            
+              
+            </tbody>
+          </table>
+        </section>
+
+      
+       
+      </main>
+    </div>
+  );
 }

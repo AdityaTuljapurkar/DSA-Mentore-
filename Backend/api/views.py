@@ -15,7 +15,7 @@ from django.http import HttpResponse
 from django.core.cache import cache
 import requests 
 from rest_framework import status 
-from .models import Question, UserInfo, Submitted_question  
+from .models import Question, UserInfo, Submitted_question ,Dashboard  
 from rest_framework.permissions import IsAuthenticated
 from api.AI_api import AI_review , AI_question_review
 # Create your views here.
@@ -196,7 +196,79 @@ def get_cache_code(request, ques_no):
 
     # 3. No code found -> frontend loads STARTER_TEMPLATES
     return Response({"source_code": None}, status=status.HTTP_200_OK)
+def dashboard_set_data(username,question,review):
+    query = Dashboard.objects.filter(
+        username = username , question = question
+    )
+    try :
+        query.review = review 
+        print("Review adding in the Dashboard")
+    except Exception as e :
+        print(f"fai;ed to update review into databse : {e}")
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_dashboard_data(request):
+    username =  request.user.username 
+    data =  Dashboard.objects.filter(
+            username =  request.user 
+    )
+    
+    username_payload =  request.user.username
+    payload = [{
+        'sr_no': item.sr_no,
+        'username':username_payload , 
+        'question' : item.question ,  
+        'solution_note' : item.solution_note , 
+        'topic' : item.topic , 
+        'date' : item.date , 
+        'remark' : item.remark,
+        'subtopic': item.subtopic,
+        'status' : item.status
+    } for item in data  ]
+    try : 
+        return Response(payload,status=status.HTTP_200_OK)
+       
+    except Exception as e : 
+        print("[Dashbord Response Error] : ",e)
+        return Response("error : falied to react server",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(["POST"])
+# @permission_classes([IsAuthenticated])
+def post_dashboard_data(request,payload):
+    username = request.user
+    question = payload.question 
+    solution_note = payload.solution_note or None 
+    topic =  payload.topic 
+    subtopic = payload.subtopic
+    remark = payload.remark
+
+    last_sr_no =  Dashboard.objects.filter(username=username).order_by('-sr_no').first()
+    if last_sr_no :
+        new_sr_no += last_sr_no
+    else : 
+        new_sr_no =  1 
+    try : 
+        Dashboard.objects.create(
+        username = username ,
+        question=question,
+        topic=topic ,
+        subtopic=subtopic ,
+        remark = remark, 
+        sr_no = new_sr_no
+    ) 
+        
+        print("[POST DASHBOARD DATA DONE]")
+    except Exception as e : 
+        print(f"[CREATE DASHBOARD DATA ERROR],{e}")
+
+    
+
+    
+    
+
+
+
+    
 
 
 

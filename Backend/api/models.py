@@ -15,14 +15,16 @@ class UserInfo(models.Model):
     last_activity = models.DateTimeField(default=get_ist_now,null=True,blank=True)
     
 class Dashboard(models.Model):
-    sr_no = models.AutoField(primary_key=True)
+    sr_no = models.IntegerField()
+
     username =  models.ForeignKey(User , on_delete=models.CASCADE)
     question = models.TextField()
-    solution_note = models.TextField(help_text="at max 3 lines")
+    solution_note = models.TextField(help_text="at max 3 lines",null=True,blank=True)
     topic= models.CharField(max_length = 150)
     subtopic = models.CharField(max_length=150)
     date = models.DateTimeField(default=get_ist_now)
-    remark = models.TextField()
+    remark = models.TextField(null=True,blank=True)
+    status = models.BooleanField(default=False)
 
 class Statistics(models.Model):
     total_questions = models.IntegerField()
