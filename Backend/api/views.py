@@ -8,12 +8,14 @@ from django.views.decorators.http import require_POST
 import json 
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response 
+from rest_framework.request import Request
 from django.shortcuts import get_object_or_404
 from .models import Question
 from .serializers import QuestionSerializer
 from django.http import HttpResponse
 from django.core.cache import cache
 import requests 
+
 from rest_framework import status 
 from .models import Question, UserInfo, Submitted_question ,Dashboard  
 from rest_framework.permissions import IsAuthenticated
@@ -45,11 +47,19 @@ def register(request):
     return JsonResponse({'message':'Happy learning'} , status = 201 )
 
 @api_view(['GET'])
-def get_question_detail(request,ques_no):
-    question_obj = get_object_or_404(Question,ques_no=ques_no)
+def get_question_detail(request, ques_no):
+    try:
+        question = Question.objects.get(ques_no=ques_no)
+        serializer = QuestionSerializer(question)
+        return Response(serializer.data)
+    except Question.DoesNotExist:
+        return Response({"error": "Question not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print("[failed while fetching data from the Question DB]", e)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 
-    serializer = QuestionSerializer(question_obj)
-    return Response(serializer.data)
+    
 
 
 PISTON_ENDPOINT = "http://piston-api:2000/api/v2/execute"
@@ -111,18 +121,57 @@ def submit_answer(request,ques_no):
         # saving the response into the database 
         try:
             save_submission_to_db(ques_no, request.user, source_code, result_data)
+            
+
         except Exception as e:
             print(f"[DB SAVE ERROR] failed to save data into database: {e}")
-        if run_data.get("code") ==1 : 
-            return Response({'error':f"{run_data.get("stderr")}"}, status=status.HTTP_200_OK)
+        dashbord = None
+        try : 
+            question_title = Question.objects.get(
+        ques_no=ques_no
+    ).question
+            
+            dashbord =Dashboard.objects.filter(
+        username=request.user,
+        question=question_title
+    ).first()
+        except Exception as e : 
+            print("failed to locate Dashboed in function submit_answer : ",e)
+        if run_data.get("code") == 1:
+            if dashbord:
+                dashbord.remark = str(e) if 'e' in locals() else run_data.get("stderr")
+                submission_status = False  # <--- Renamed from `status`
+            return Response({'error': f"{run_data.get('stderr')}"}, status=status.HTTP_200_OK)
+        
         else : 
-            ai_res =  AI_question_review(user, ques_no)     
+            ai_res =  AI_question_review(user, ques_no)   
+            if dashbord : 
+                try : 
+                    review_data = ai_res.data
+
+                    execution_analysis = (
+                            review_data
+                            .get("message", {})
+                            .get("execution_analysis", {})
+                        )
+
+                    dashbord.remark = str(
+                        execution_analysis.get("interpretation", "")
+                    )
+                    dashbord.save(update_fields=["remark"])
+             
+                
+                except Exception as e : 
+                    print("failed to add the exicution anaylsis data in the dasbhboed DB [Submit_analysis]",e)
+            
             return Response({
                 "message":{
                     "code_output":run_data.get("output"),
                     "ai_review":ai_res.data
                 }
             },status=status.HTTP_202_ACCEPTED)
+        
+        
 
     except requests.exceptions.Timeout as e: 
         return Response({"error :"f"Exicution Engine timeout while waiting for response {str(e)}"},status=status.HTTP_504_GATEWAY_TIMEOUT)
@@ -134,6 +183,7 @@ def save_submission_to_db(ques_no, user, source_code, exicution_result):
     try:
         user_obj = UserInfo.objects.get(user=user)
         question_object = Question.objects.get(ques_no=ques_no)
+        question_title = question_object.question
 
         exicution_output = exicution_result.get('run', {})
         language = exicution_result.get("language", "")
@@ -160,7 +210,10 @@ def save_submission_to_db(ques_no, user, source_code, exicution_result):
         cache.set(QUESTION_KEY,source_code,timeout=259200)
         cache.set(RESULT_KEY,exicution_result,timeout=259200)
         print(f"[REDIS CACHED] saved {QUESTION_KEY} and {RESULT_KEY}")
-        return submission
+        
+
+
+
 
     except UserInfo.DoesNotExist:
         print(f"[DB SAVE ERROR]: UserInfo not found for user: {user}")
@@ -185,8 +238,8 @@ def get_cache_code(request, ques_no):
 
     # 2. Cache MISS -> Try PostgreSQL
     submission = Submitted_question.objects.filter(
-        user_id=request.user,
-        ques_no=ques_no
+        user_id__user=request.user,
+        question_no=ques_no
     ).order_by('-id').first()
 
     if submission:
@@ -204,29 +257,27 @@ def dashboard_set_data(username,question,review):
         query.review = review 
         print("Review adding in the Dashboard")
     except Exception as e :
-        print(f"fai;ed to update review into databse : {e}")
+        print(f"failed to update review into databse : {e}")
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_dashboard_data(request):
-    username =  request.user.username 
-    data =  Dashboard.objects.filter(
-            username =  request.user 
-    )
-    
-    username_payload =  request.user.username
-    payload = [{
-        'sr_no': item.sr_no,
-        'username':username_payload , 
-        'question' : item.question ,  
-        'solution_note' : item.solution_note , 
-        'topic' : item.topic , 
-        'date' : item.date , 
-        'remark' : item.remark,
-        'subtopic': item.subtopic,
-        'status' : item.status
-    } for item in data  ]
-    try : 
-        return Response(payload,status=status.HTTP_200_OK)
+    data = Dashboard.objects.filter(username=request.user)
+    try :
+        questions_payload = [{
+            'sr_no': item.sr_no,
+            'question': item.question,
+            'solution_note': item.solution_note,
+            'topic': item.topic,
+            'date': item.date,
+            'remark': item.remark,
+            'subtopic': item.subtopic,
+            'status': item.status
+        } for item in data]
+
+        return Response({
+            "username": request.user.username,
+            "questions": questions_payload
+        }, status=status.HTTP_200_OK)
        
     except Exception as e : 
         print("[Dashbord Response Error] : ",e)
@@ -257,13 +308,59 @@ def post_dashboard_data(request,payload):
         sr_no = new_sr_no
     ) 
         
+        
         print("[POST DASHBOARD DATA DONE]")
     except Exception as e : 
         print(f"[CREATE DASHBOARD DATA ERROR],{e}")
 
-    
+# this function will be called by the AI 
+# this function will be called by the AI 
+def create_question(request, payload):
+    try:
+        Question.objects.create(
+            question = payload.get("question"), 
+            question_content = payload.get("content", ""), 
+            constraints = payload.get("constraints", ""), 
+            timeLimit = payload.get("timelimit", 1.0), 
+            memoryLimit = payload.get("memory_limit", 128), 
+            subtopic = payload.get("subtopic") or None,
+            hint_1 = payload.get("hint1", ""), 
+            hint_2 = payload.get("hint2", ""), 
+            hint_3 = payload.get("hint3", ""), 
+            topic = payload.get("topic", "General"), 
+            stdin = payload.get("stdin", "")
+        )
+        print("[new question saved in DB]")
+    except Exception as e:
+        print("[Error while saving the new Question in DB]:", e)
+        return Response({"error": f"Failed to save Question: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    
+    try:
+        last_entry = Dashboard.objects.filter(username=request.user).order_by('-sr_no').first()
+        new_sr_no = (last_entry.sr_no + 1) if (last_entry and last_entry.sr_no) else 1
+
+        Dashboard.objects.create(
+            username = request.user,
+            question = payload.get("question"),
+            topic = payload.get("topic", "General"),
+            subtopic = payload.get("subtopic") or None,
+            remark = None,
+            sr_no = new_sr_no,
+            status = False
+        )
+        print("[new question added to Dashboard DB]")
+    except Exception as e:
+        print(f"[failed to save the question data in dashboard DB]: {e}")
+
+    # Return a DRF Response so test_create_question returns a valid HTTP response
+    return Response({"message": "Question created successfully"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def test_create_question(request):
+    payload = request.data
+    return create_question(request, payload)
     
 
 

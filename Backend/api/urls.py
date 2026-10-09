@@ -12,5 +12,8 @@ urlpatterns = [
     path("api/cache_source_code/<int:ques_no>",views.get_cache_code,name="cache_source_code"),
     path("api/cache_source_code/<int:ques_no>", views.get_cache_code, name="cache_source_code"),
     path('api/ai/review/<int:ques_no>/', views.AI_question_review, name='ai_review'),
-    path( 'api/fetch_dashboard_data/',view=views.get_dashboard_data,name='get_dashboardData')
+    path( 'api/fetch_dashboard_data/',views.get_dashboard_data,name='get_dashboardData'),
+    path('api/submit_dashboard_data/',views.post_dashboard_data,name='post_dashbord_data'),
+        path('api/create_question/', views.create_question, name='create_question'),
+        path("api/test_create_question/", views.test_create_question),
 ]

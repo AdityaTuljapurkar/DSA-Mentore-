@@ -20,61 +20,53 @@ export default function Dashboard() {
   const [liveTime, setLiveTime] = useState(new Date())
   const [username, setUsername] = useState("")
 
-  function getliveTime(){
-    useEffect(() => { 
-      const interval =  setInterval(()=>
-        setLiveTime(new Date()),1000
+  function getliveTime() {
+    useEffect(() => {
+      const interval = setInterval(() =>
+        setLiveTime(new Date()), 1000
       )
-    
+
       return () => {
         clearInterval(interval)
       }
     }, [])
     return liveTime
-    
+
 
   }
 
 
   // Fetch dashboard data
-useEffect(() => {
+  useEffect(() => {
     const handel_data_fetch = async () => {
-        try {
-            const accessTkn = localStorage.getItem("accessToken");
+      try {
+        const accessTkn = localStorage.getItem("accessToken");
 
-            const header = accessTkn
-                ? { Authorization: `Bearer ${accessTkn}` }
-                : {};
+        const header = accessTkn
+          ? { Authorization: `Bearer ${accessTkn}` }
+          : {};
 
-            const response = await axios.get(
-                "http://127.0.0.1:8000/api/fetch_dashboard_data/",
-                { headers: header }
-            );
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/fetch_dashboard_data/",
+          { headers: header }
+        );
 
-            setDashboardData(response.data);
+        setDashboardData(response.data.questions);
+        setUsername(response.data.username);
 
 
-            console.log(
-                "[Dashboard Backend Response]",
-                response.data
-                
-            );
-            console.log("usermname", response.data[0].username);
-            setUsername(response.data[0].username)
-            
-
-        } catch (error) {
-            console.log("[dashboard fetch error]", error);
-        }
-        finally {
-            setLoading(false);
-        }
+      } catch (error) {
+        console.log("[dashboard fetch error]", error);
+      }
+      finally {
+        setLoading(false);
+      }
     };
 
     handel_data_fetch();
-    
-    
-}, []);
+
+
+  }, []);
 
 
 
@@ -98,9 +90,9 @@ useEffect(() => {
 
 
 
-if (loading) {
+  if (loading) {
     return <div>Loading dashboard...</div>;
-}
+  }
 
   return (
     <div>
@@ -113,9 +105,9 @@ if (loading) {
           {
             username && <h4>
               <b>
-                User : 
+                User :
               </b> {username}
-              
+
             </h4>
           }
           <button onClick={handleLogout}>Logout</button>
@@ -131,7 +123,7 @@ if (loading) {
               <h4>Current Streak</h4>
               <p>{userData.streak} Days 🔥</p>
             </div>
-           
+
             <div>
               <h4>Topics Practiced</h4>
               <p>Arrays, Strings</p>
@@ -154,8 +146,8 @@ if (loading) {
               value={selectedTopic}
               onChange={(e) => setSelectedTopic(e.target.value)}
             >
-              ​
-{/* date: "2026-10-05T12:57:01Z"
+
+              {/* date: "2026-10-05T12:57:01Z"
 ​
 ​
 question: "gegb"
@@ -182,7 +174,7 @@ topic: "g" */}
               <tr>
                 <th>SR.no</th>
                 <th>Question</th>
-                
+
                 <th>Topic</th>
                 <th>subtopic</th>
                 <th>Date</th>
@@ -191,29 +183,29 @@ topic: "g" */}
               </tr>
             </thead>
             <tbody>
-             {dashboardData.map((item)=>(
-              <tr key={item.sr_no}> 
-      <td>{item.sr_no}</td>
-      <td>{item.question}</td>
-      <td>{item.topic}</td>
-      <td>{item.subtopic || "none"}</td>
-      <td>{new Date(item.date).toLocaleDateString()}</td>
-      <td>{item.status ? "\u2705" : "\u274C"}</td>
-      <td>{item.remark || "no remark yet"}</td>
+              {dashboardData.map((item) => (
+                <tr key={item.sr_no}>
+                  <td>{item.sr_no}</td>
+                  <td>{item.question}</td>
+                  <td>{item.topic}</td>
+                  <td>{item.subtopic || "none"}</td>
+                  <td>{new Date(item.date).toLocaleDateString()}</td>
+                  <td>{item.status ? "\u2705" : "\u274C"}</td>
+                  <td>{item.remark || "no remark yet"}</td>
 
-              </tr>
+                </tr>
 
 
-             ))}
-              
-            
-              
+              ))}
+
+
+
             </tbody>
           </table>
         </section>
 
-      
-       
+
+
       </main>
     </div>
   );

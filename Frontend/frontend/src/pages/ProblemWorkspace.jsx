@@ -39,6 +39,7 @@ export default function ProblemWorkspace() {
   const [language, setLanguage] = useState("python");
   const [Theme, setTheme] = useState("vs-dark");
   const [code, setCode] = useState(STARTER_TEMPLATES.python);
+ const [dashboardPayload, setDashboardPayload] = useState({})
   // AI Submission states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviewResult, setReviewResult] = useState(null);
@@ -155,6 +156,8 @@ export default function ProblemWorkspace() {
       setIsSubmitting(false);
     }
   }
+
+// FIX 1: "data" now has const, and a bad JSON string no longer crashes
 function extractReview(reviewResult){
   const payload = reviewResult?.message 
   if (!payload){
@@ -168,7 +171,7 @@ function extractReview(reviewResult){
   if (typeof payload === "string"){
     try {
       
-      data =  JSON.parse(payload)
+      const data =  JSON.parse(payload)
       console.log(data);
       return data
       
@@ -209,8 +212,7 @@ function extractReview(reviewResult){
         <h1>{questionData?.question}</h1>
 
         {/* CKEditor HTML Content */}
-        <div dangerouslySetInnerHTML={{ __html: questionData?.question_containt || "" }} />
-
+<div dangerouslySetInnerHTML={{ __html: questionData?.question_content || "" }} />
         {/* Constraints */}
         {questionData?.constraints && (
           <div>
@@ -294,6 +296,11 @@ function extractReview(reviewResult){
             }} />
 
 
+        {/* FIX 2: compile / runtime error from backend comes as { error: "..." } */}
+        {reviewResult?.error && (
+          <pre><h3>Execution error :</h3>{reviewResult.error}</pre>
+        )}
+
         {
           aiData && (
             
@@ -302,47 +309,73 @@ function extractReview(reviewResult){
              
               const output = aiData?.code_output
               const review_status = aiData?.ai_review?.message?.review_status || "no data"
+              const review_text = aiData?.ai_review?.message?.review || null
               const summary = aiData?.ai_review?.message?.summary || "no data"
               const logic_analysis = aiData?.ai_review?.message?.logic_analysis || "no data"
-              const issues = aiData?.ai_review?.message?.issues || "no data"
-              const hints = aiData?.ai_review?.message?.hints || "no data"
+              const execution_analysis = aiData?.ai_review?.message?.execution_analysis || null
               const next_step = aiData?.ai_review?.message?.next_step || "no data"
+
+              // FIX 3: issues and hints must be arrays. Before, they defaulted to the string "no data",
+              // and "no data"[0] is "n", which is where the "0: n" output came from.
+              const issues_raw = aiData?.ai_review?.message?.issues
+              const hints_raw = aiData?.ai_review?.message?.hints
+              const issues = Array.isArray(issues_raw) ? issues_raw : []
+              const hints = Array.isArray(hints_raw) ? hints_raw : []
 
               return (
                 <>
+                {review_text && (
+  <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
+    <h3>AI Review:</h3>
+    {review_text}
+  </pre>
+)}
                 <pre> <h3>Mother Data : </h3>{JSON.stringify(aiData)}</pre>
                 <pre><h3>review status :</h3>{JSON.stringify(review_status)}</pre>
                 <pre><h3>code output :</h3>{JSON.stringify(output)}</pre>
                 <pre><h3>summary :</h3>{JSON.stringify(summary)}</pre>
                 <pre><h3> logical analysis :</h3>{JSON.stringify(logic_analysis)}</pre>
+                <pre><h3> execution analysis :</h3>{JSON.stringify(execution_analysis)}</pre>
 <div>
     <h3>Issues</h3>
 
-    
-
-    {issues[0] &&
-      Object.entries(issues[0]).map(([key, value]) => (
-        <p key={key}>
-          <strong>{key}:</strong>{" "}
-          {typeof value === "object" && value !== null
-            ? JSON.stringify(value)
-            : String(value)}
-        </p>
-      ))}
+    {/* FIX 4: show every issue, not only issues[0] */}
+    {issues.map((issue, index) => (
+      <div key={index}>
+        {typeof issue === "object" && issue !== null
+          ? Object.entries(issue).map(([key, value]) => (
+              <p key={key}>
+                <strong>{key}:</strong>{" "}
+                {typeof value === "object" && value !== null
+                  ? JSON.stringify(value)
+                  : String(value)}
+              </p>
+            ))
+          : <p>{String(issue)}</p>}
+        <hr />
+      </div>
+    ))}
   </div>        
 
   <div>
     <h3>Hints</h3>
 
-    {hints[0] &&
-      Object.entries(hints[0]).map(([key, value]) => (
-        <p key={key}>
-          <strong>{key}:</strong>{" "}
-          {typeof value === "object" && value !== null
-            ? JSON.stringify(value)
-            : String(value)}
-        </p>
-      ))}
+    {/* same for hints */}
+    {hints.map((hint, index) => (
+      <div key={index}>
+        {typeof hint === "object" && hint !== null
+          ? Object.entries(hint).map(([key, value]) => (
+              <p key={key}>
+                <strong>{key}:</strong>{" "}
+                {typeof value === "object" && value !== null
+                  ? JSON.stringify(value)
+                  : String(value)}
+              </p>
+            ))
+          : <p>{String(hint)}</p>}
+        <hr />
+      </div>
+    ))}
     <pre><h2><b>next_step</b>: {JSON.stringify(next_step)}</h2></pre>
   </div>    
               </>

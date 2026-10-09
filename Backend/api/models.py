@@ -35,7 +35,7 @@ class Statistics(models.Model):
 class Question(models.Model):
     ques_no = models.AutoField(primary_key=True)
     question = models.TextField()
-    question_containt = CKEditor5Field('Content', config_name='extends')
+    question_content = CKEditor5Field('Content', config_name='extends')
     constraints = models.CharField(max_length=500, blank=True)
     timeLimit = models.FloatField(blank=False,null=False)
     memoryLimit = models.IntegerField(blank=False,null=False)
@@ -44,6 +44,7 @@ class Question(models.Model):
     hint_3 = models.TextField(blank=True)
     topic = models.CharField(max_length=150)
     stdin = models.TextField(blank=True)
+    subtopic = models.TextField(blank=True , null = True)
 
 class Submitted_question(models.Model):
     question_no = models.ForeignKey(Question,on_delete=models.CASCADE)

@@ -2,3 +2,4 @@
 Backend/api/migrations
 .env
 *.env
+*venv

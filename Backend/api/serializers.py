@@ -6,7 +6,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question 
         fields = [
-            'ques_no' , 'question' ,'question_containt' ,'constraints' , 'hint_1' , 'hint_2' , 'hint_3' ,'topic','timeLimit','memoryLimit','stdin'
+            'ques_no' , 'question' ,'question_content' ,'constraints' , 'hint_1' , 'hint_2' , 'hint_3' ,'topic','timeLimit','memoryLimit','stdin'
         ]
 
 class SubmittedQuestionSeralizer(serializers.ModelSerializer):
