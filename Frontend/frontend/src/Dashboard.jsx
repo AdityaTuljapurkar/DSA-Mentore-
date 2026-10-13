@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios, { Axios } from "axios";
-
+import QuestionFrom from "./pages/QuestionFrom";
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -72,7 +72,7 @@ export default function Dashboard() {
 
 
 
-  // Filter logic
+  // Filter logict
   const filteredQuestions = questions.filter((q) => {
     const matchesSearch = q.question.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTopic = selectedTopic === "all" || q.topic === selectedTopic;
@@ -97,6 +97,7 @@ export default function Dashboard() {
   return (
     <div>
       {/* 1. Header / Navigation */}
+
       <header>
         <div>
           <h2>DSA Mentor</h2>
@@ -115,6 +116,7 @@ export default function Dashboard() {
       </header>
 
       <main>
+        <QuestionFrom/>
         {/* 2. Top Stats Overview */}
         <section>
           <h2>Overview</h2>

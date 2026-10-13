@@ -20,6 +20,7 @@ from rest_framework import status
 from .models import Question, UserInfo, Submitted_question ,Dashboard  
 from rest_framework.permissions import IsAuthenticated
 from api.AI_api import AI_review , AI_question_review
+from api.question_AI import AI_question_create
 # Create your views here.
 
 def test_connections(request):
@@ -315,7 +316,97 @@ def post_dashboard_data(request,payload):
 
 # this function will be called by the AI 
 # this function will be called by the AI 
-def create_question(request, payload):
+
+
+
+
+
+@api_view(["POST"])
+def submit_question_form(request):
+    if request.data :
+        print(request.data)
+
+
+    payload = {
+        "topic": request.data.get("topic", "").strip(),
+        "subtopic": request.data.get("subtopic", "").strip(),
+        "level": request.data.get("level", "learner"),
+        "known_topics": request.data.get("known_topics", "").strip(),
+        "goal": request.data.get("goal", "learn_basics"),
+        "additional_info": request.data.get("additional_info", "").strip(),
+    }
+    try : 
+        question_response = AI_question_create(payload)
+        print("response from the question create AI : ",question_response)
+    except Exception as e : 
+        print("Error while creating the question via AI in [submit_question_form] ",e)
+
+    
+    return Response("endpoint working",status=status.HTTP_200_OK)
+
+
+
+
+
+
+
+
+
+import re
+import json
+
+
+def parse_question(text):
+    """Convert the AI reply into a clean dict for create_question(). Raises ValueError if invalid."""
+    text = (text or "").strip()
+
+    # remove ```json fences if the model added them
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text).strip()
+
+    # parse JSON, falling back to the outermost {...} if the model added extra text
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", text, re.DOTALL)
+        if not match:
+            raise ValueError("AI did not return JSON")
+        try:
+            data = json.loads(match.group(0))
+        except json.JSONDecodeError as e:
+            raise ValueError(f"AI returned invalid JSON: {e}")
+
+    if not isinstance(data, dict):
+        raise ValueError("AI JSON is not an object")
+
+    # required text fields must exist and not be empty
+    required = ["question", "content", "constraints", "topic",
+                "hint1", "hint2", "hint3", "stdin"]
+    for key in required:
+        value = data.get(key)
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"missing or empty field: {key}")
+
+    data["question"] = data["question"].strip()
+    data["topic"] = data["topic"].strip()    
+    data["subtopic"] = (data.get("subtopic") or "").strip() or None
+    if not data["stdin"].endswith("\n"):
+        data["stdin"] += "\n"
+
+    # numbers must be real numbers, never strings or null
+    try:
+        data["timelimit"] = float(data.get("timelimit") or 1.0)
+        data["memory_limit"] = int(data.get("memory_limit") or 128)
+    except (TypeError, ValueError):
+        data["timelimit"] = 1.0
+        data["memory_limit"] = 128
+
+    return data
+    
+
+
+
+
+def create_question(username,payload):
     try:
         Question.objects.create(
             question = payload.get("question"), 
@@ -336,11 +427,11 @@ def create_question(request, payload):
         return Response({"error": f"Failed to save Question: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        last_entry = Dashboard.objects.filter(username=request.user).order_by('-sr_no').first()
+        last_entry = Dashboard.objects.filter(username=username).order_by('-sr_no').first()
         new_sr_no = (last_entry.sr_no + 1) if (last_entry and last_entry.sr_no) else 1
 
         Dashboard.objects.create(
-            username = request.user,
+            username = username,
             question = payload.get("question"),
             topic = payload.get("topic", "General"),
             subtopic = payload.get("subtopic") or None,
@@ -354,19 +445,3 @@ def create_question(request, payload):
 
     # Return a DRF Response so test_create_question returns a valid HTTP response
     return Response({"message": "Question created successfully"}, status=status.HTTP_201_CREATED)
-
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def test_create_question(request):
-    payload = request.data
-    return create_question(request, payload)
-    
-
-
-
-    
-
-
-
-

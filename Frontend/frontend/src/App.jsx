@@ -8,6 +8,7 @@ import HomeRedirect from './components/HomeRedirect';
 import Logout from './pages/Logout';
 import ProblemWorkspace from './pages/ProblemWorkspace';
 import PageNotFound from './pages/page_notFound';
+import QuestionForm from './pages/QuestionFrom';
 function handelHomeRedirect(){
   const accessToken = localStorage.getItem("accessToken")
   return (
@@ -28,6 +29,7 @@ function App() {
       <Route path='/logout' element={<Logout/>}/>
       <Route path='/workspace' element={<ProblemWorkspace/>}/>
       <Route path='/problem/:id' element={<ProblemWorkspace/>}/>
+      <Route path = '/question_form' element={<QuestionForm/>}/>
       <Route path='*' element= {<PageNotFound/>}/> 
       </Routes>
      

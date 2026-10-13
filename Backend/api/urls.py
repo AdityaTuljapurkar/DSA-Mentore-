@@ -15,5 +15,6 @@ urlpatterns = [
     path( 'api/fetch_dashboard_data/',views.get_dashboard_data,name='get_dashboardData'),
     path('api/submit_dashboard_data/',views.post_dashboard_data,name='post_dashbord_data'),
         path('api/create_question/', views.create_question, name='create_question'),
-        path("api/test_create_question/", views.test_create_question),
+        
+        path('api/submit_question_form',views.submit_question_form),
 ]
