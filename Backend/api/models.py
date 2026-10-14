@@ -16,7 +16,7 @@ class UserInfo(models.Model):
     
 class Dashboard(models.Model):
     sr_no = models.IntegerField()
-
+    ques_no = models.IntegerField(default=9)
     username =  models.ForeignKey(User , on_delete=models.CASCADE)
     question = models.TextField()
     solution_note = models.TextField(help_text="at max 3 lines",null=True,blank=True)

@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cosmic-bg: #080B10;
+  --color-cosmic-surface: #111722;
+  --color-cosmic-editor: #0D1117;
+  --color-cosmic-cyan: #00E5FF;
+  --color-cosmic-violet: #8B5CF6;
+  --color-cosmic-success: #22C55E;
+  --color-cosmic-error: #F43F5E;
+  --color-cosmic-text: #F4F4F5;
+  --color-cosmic-muted: #A1A1AA;
+  --color-cosmic-border: rgba(255, 255, 255, 0.08);
+  --color-cosmic-glass: rgba(17, 23, 34, 0.65);
+}
+
+/* Rich-text HTML content from CKEditor */
+.pw-html h3 { color: var(--color-cosmic-cyan); font-size: 15px; font-weight: 600; margin: 20px 0 8px; }
+.pw-html p { color: var(--color-cosmic-text); font-size: 14px; line-height: 1.7; margin: 0 0 10px; }
+.pw-html pre { background: rgba(0,0,0,0.35); border: 1px solid var(--color-cosmic-border); border-radius: 10px; padding: 14px; overflow-x: auto; margin: 10px 0; }
+.pw-html code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 13px; color: var(--color-cosmic-cyan); }
+.pw-html pre code { color: var(--color-cosmic-text); }
+.pw-html ul, .pw-html ol { padding-left: 20px; color: var(--color-cosmic-text); font-size: 14px; }
+.pw-html li { margin-bottom: 4px; }
+.pw-html strong { color: var(--color-cosmic-text); font-weight: 600; }
+.pw-html em { color: var(--color-cosmic-muted); }

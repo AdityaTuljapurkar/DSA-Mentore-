@@ -16,6 +16,6 @@ class SubmittedQuestionSeralizer(serializers.ModelSerializer):
 class DashboardSeralizer(serializers.ModelSerializer):
     class Meta : 
         model = Dashboard 
-        fields = [ "sr_no" , "subtopic", "username" , "question" ,"solution_note" , "topic" , "date" , "remark","status"
+        fields = [ "sr_no" , "ques_no", "subtopic", "username" , "question" ,"solution_note" , "topic" , "date" , "remark","status"
         ]
         

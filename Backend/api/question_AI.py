@@ -51,13 +51,13 @@ def AI_question_create(payload):
         message = interaction.choices[0].message
         response_text = message.content
 
-        print("[AI_question_create RAW]:", response_text)
+        # print("[AI_question_create RAW]:", response_text)
 
         if not response_text:
             return {"error": "AI returned empty response"}
 
         data = json.loads(response_text)
-        print("[question AI] response data",data)
+        # print("[question AI] response data",data)
         return data
 
     except json.JSONDecodeError:

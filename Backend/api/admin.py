@@ -7,7 +7,7 @@ class UserInfoAdmin(admin.ModelAdmin):
 
 @admin.register(Dashboard)
 class DashboardAdmin(admin.ModelAdmin):
-    list_display=('sr_no','question','solution_note','topic','subtopic','date','remark','status')
+    list_display=('sr_no', 'ques_no','question','solution_note','topic','subtopic','date','remark','status')
     list_filter = ('topic','subtopic','date')
     search_fields=('question','topic','subtopic')
 

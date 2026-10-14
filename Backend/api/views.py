@@ -147,19 +147,27 @@ def submit_answer(request,ques_no):
         else : 
             ai_res =  AI_question_review(user, ques_no)   
             if dashbord : 
-                try : 
+                try:
                     review_data = ai_res.data
+                    review_msg = review_data.get("message", {})
+                    execution_analysis = review_msg.get("execution_analysis", {})
 
-                    execution_analysis = (
-                            review_data
-                            .get("message", {})
-                            .get("execution_analysis", {})
-                        )
+                    review_status = str(review_msg.get("review_status", "")).lower()
+                    exec_status = str(execution_analysis.get("status", "")).lower()
 
-                    dashbord.remark = str(
-                        execution_analysis.get("interpretation", "")
+                   
+                    is_correct = (
+                        review_status in ["correct", "pass", "passed"]
+                        or exec_status in ["passed", "pass", "correct"]
                     )
-                    dashbord.save(update_fields=["remark"])
+
+                    dashbord.status = is_correct
+                    dashbord.remark = str(execution_analysis.get("interpretation", ""))
+                    dashbord.save(update_fields=["status", "remark"])
+                    print(f"[Dashboard Updated] status: {dashbord.status}, remark: {dashbord.remark[:50]}")
+
+                except Exception as e:
+                    print("failed to update dashboard DB [Submit_analysis]:", e)
              
                 
                 except Exception as e : 
@@ -266,6 +274,7 @@ def get_dashboard_data(request):
     try :
         questions_payload = [{
             'sr_no': item.sr_no,
+            'ques_no' : item.ques_no ,
             'question': item.question,
             'solution_note': item.solution_note,
             'topic': item.topic,
@@ -322,6 +331,7 @@ def post_dashboard_data(request,payload):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def submit_question_form(request):
     if request.data :
         print(request.data)
@@ -337,7 +347,10 @@ def submit_question_form(request):
     }
     try : 
         question_response = AI_question_create(payload)
-        print("response from the question create AI : ",question_response)
+        print("[question AI] response data",question_response)
+        create_question(request.user,question_response)
+
+
     except Exception as e : 
         print("Error while creating the question via AI in [submit_question_form] ",e)
 
@@ -351,64 +364,9 @@ def submit_question_form(request):
 
 
 
-
-import re
-import json
-
-
-def parse_question(text):
-    """Convert the AI reply into a clean dict for create_question(). Raises ValueError if invalid."""
-    text = (text or "").strip()
-
-    # remove ```json fences if the model added them
-    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text).strip()
-
-    # parse JSON, falling back to the outermost {...} if the model added extra text
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if not match:
-            raise ValueError("AI did not return JSON")
-        try:
-            data = json.loads(match.group(0))
-        except json.JSONDecodeError as e:
-            raise ValueError(f"AI returned invalid JSON: {e}")
-
-    if not isinstance(data, dict):
-        raise ValueError("AI JSON is not an object")
-
-    # required text fields must exist and not be empty
-    required = ["question", "content", "constraints", "topic",
-                "hint1", "hint2", "hint3", "stdin"]
-    for key in required:
-        value = data.get(key)
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError(f"missing or empty field: {key}")
-
-    data["question"] = data["question"].strip()
-    data["topic"] = data["topic"].strip()    
-    data["subtopic"] = (data.get("subtopic") or "").strip() or None
-    if not data["stdin"].endswith("\n"):
-        data["stdin"] += "\n"
-
-    # numbers must be real numbers, never strings or null
-    try:
-        data["timelimit"] = float(data.get("timelimit") or 1.0)
-        data["memory_limit"] = int(data.get("memory_limit") or 128)
-    except (TypeError, ValueError):
-        data["timelimit"] = 1.0
-        data["memory_limit"] = 128
-
-    return data
-    
-
-
-
-
 def create_question(username,payload):
     try:
-        Question.objects.create(
+        new_question =Question.objects.create(
             question = payload.get("question"), 
             question_content = payload.get("content", ""), 
             constraints = payload.get("constraints", ""), 
@@ -432,6 +390,7 @@ def create_question(username,payload):
 
         Dashboard.objects.create(
             username = username,
+            ques_no = new_question.ques_no ,
             question = payload.get("question"),
             topic = payload.get("topic", "General"),
             subtopic = payload.get("subtopic") or None,
@@ -445,3 +404,20 @@ def create_question(username,payload):
 
     # Return a DRF Response so test_create_question returns a valid HTTP response
     return Response({"message": "Question created successfully"}, status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+def fetch_question_data(request):
+    username  =  request.user 
+    try : 
+        db_response = Question.objects.filter(
+            username = username
+        ).order_by('id')
+        payload = {
+            'Question' : db_response.question , 
+            'ques_no' :  db_response.ques_no ,
+        }
+        print("[Question DB] id filter : ",payload)
+
+        return Response(db_response,status=status.HTTP_200_OK)
+    except Exception as e : 
+        print("[Question DB] id filter error : ",e)

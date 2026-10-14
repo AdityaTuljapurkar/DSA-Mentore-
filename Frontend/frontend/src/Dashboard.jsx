@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios, { Axios } from "axios";
 import QuestionFrom from "./pages/QuestionFrom";
 export default function Dashboard() {
@@ -51,13 +51,18 @@ export default function Dashboard() {
           { headers: header }
         );
 
+
+
         setDashboardData(response.data.questions);
         setUsername(response.data.username);
 
 
       } catch (error) {
         console.log("[dashboard fetch error]", error);
-      }
+        if (error.response && error.response.status === 401) {
+          localStorage.removeItem("accessToken");
+          navigate("/login");
+        }}
       finally {
         setLoading(false);
       }
@@ -116,7 +121,7 @@ export default function Dashboard() {
       </header>
 
       <main>
-        <QuestionFrom/>
+        <QuestionFrom />
         {/* 2. Top Stats Overview */}
         <section>
           <h2>Overview</h2>
@@ -175,8 +180,8 @@ topic: "g" */}
             <thead>
               <tr>
                 <th>SR.no</th>
+                {/* <th>Ques no</th> */}
                 <th>Question</th>
-
                 <th>Topic</th>
                 <th>subtopic</th>
                 <th>Date</th>
@@ -188,7 +193,12 @@ topic: "g" */}
               {dashboardData.map((item) => (
                 <tr key={item.sr_no}>
                   <td>{item.sr_no}</td>
-                  <td>{item.question}</td>
+                  {/* <td>{item.ques_no}</td> */}
+                  <td>
+                    <Link to={`/problem/${item.ques_no}`}>
+                      {item.question}
+                    </Link>
+                  </td>
                   <td>{item.topic}</td>
                   <td>{item.subtopic || "none"}</td>
                   <td>{new Date(item.date).toLocaleDateString()}</td>
