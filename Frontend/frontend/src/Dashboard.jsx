@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios, { Axios } from "axios";
 import QuestionFrom from "./pages/QuestionFrom";
+import Statistics from "./pages/Statistics";
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -78,11 +79,11 @@ export default function Dashboard() {
 
 
   // Filter logict
-  const filteredQuestions = questions.filter((q) => {
-    const matchesSearch = q.question.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTopic = selectedTopic === "all" || q.topic === selectedTopic;
-    return matchesSearch && matchesTopic;
-  });
+  // const filteredQuestions = questions.filter((q) => {
+  //   const matchesSearch = q.question.toLowerCase().includes(searchTerm.toLowerCase());
+  //   const matchesTopic = selectedTopic === "all" || q.topic === selectedTopic;
+  //   return matchesSearch && matchesTopic;
+  // });
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -124,24 +125,17 @@ export default function Dashboard() {
         <QuestionFrom />
         {/* 2. Top Stats Overview */}
         <section>
-          <h2>Overview</h2>
-          <div>
-            <div>
-              <h4>Current Streak</h4>
-              <p>{userData.streak} Days 🔥</p>
-            </div>
+          <h2>stats</h2>
+          <Statistics/>
 
-            <div>
-              <h4>Topics Practiced</h4>
-              <p>Arrays, Strings</p>
-            </div>
-          </div>
         </section>
+
+       
 
         {/* 3. Filters & Search Section */}
         <section>
           <h2>Problems</h2>
-          <div>
+          {/* <div>
             <input
               type="text"
               placeholder="Search problems..."
@@ -154,26 +148,14 @@ export default function Dashboard() {
               onChange={(e) => setSelectedTopic(e.target.value)}
             >
 
-              {/* date: "2026-10-05T12:57:01Z"
-​
-​
-question: "gegb"
-​
-​
-remark: "gnnn"
-​
-​
-solution_note: "geg"
-​
-​
-topic: "g" */}
+
 
               <option value="all">All Topics</option>
               <option value="Arrays & Hashing">Arrays & Hashing</option>
               <option value="Strings">Strings</option>
               <option value="Linked List">Linked List</option>
             </select>
-          </div>
+          </div> */}
 
           {/* 4. Question Table / List */}
           <table>
