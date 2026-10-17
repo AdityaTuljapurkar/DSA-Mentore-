@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios, { Axios } from "axios";
 import QuestionFrom from "./pages/QuestionFrom";
 import Statistics from "./pages/Statistics";
+
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -17,25 +18,22 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState([])
-  const [liveTime, setLiveTime] = useState(new Date())
-  const [username, setUsername] = useState("")
+  const [dashboardData, setDashboardData] = useState([]);
+  const [liveTime, setLiveTime] = useState(new Date());
+  const [username, setUsername] = useState("");
 
   function getliveTime() {
     useEffect(() => {
       const interval = setInterval(() =>
         setLiveTime(new Date()), 1000
-      )
+      );
 
       return () => {
-        clearInterval(interval)
-      }
-    }, [])
-    return liveTime
-
-
+        clearInterval(interval);
+      };
+    }, []);
+    return liveTime;
   }
-
 
   // Fetch dashboard data
   useEffect(() => {
@@ -52,38 +50,21 @@ export default function Dashboard() {
           { headers: header }
         );
 
-
-
         setDashboardData(response.data.questions);
         setUsername(response.data.username);
-
-
       } catch (error) {
         console.log("[dashboard fetch error]", error);
         if (error.response && error.response.status === 401) {
           localStorage.removeItem("accessToken");
           navigate("/login");
-        }}
-      finally {
+        }
+      } finally {
         setLoading(false);
       }
     };
 
     handel_data_fetch();
-
-
   }, []);
-
-
-
-
-
-  // Filter logict
-  // const filteredQuestions = questions.filter((q) => {
-  //   const matchesSearch = q.question.toLowerCase().includes(searchTerm.toLowerCase());
-  //   const matchesTopic = selectedTopic === "all" || q.topic === selectedTopic;
-  //   return matchesSearch && matchesTopic;
-  // });
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -91,116 +72,128 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div>Loading dashboard...</div>;
-  }
-
-
-
-  if (loading) {
-    return <div>Loading dashboard...</div>;
+    return (
+      <div className="min-h-screen bg-[#0b0d14] text-[#8a90a6] flex items-center justify-center font-sans">
+        Loading dashboard...
+      </div>
+    );
   }
 
   return (
-    <div>
-      {/* 1. Header / Navigation */}
-
-      <header>
-        <div>
-          <h2>DSA Mentor</h2>
-        </div>
-        <nav>
-          {
-            username && <h4>
-              <b>
-                User :
-              </b> {username}
-
-            </h4>
-          }
-          <button onClick={handleLogout}>Logout</button>
-        </nav>
-      </header>
-
-      <main>
-        <QuestionFrom />
-        {/* 2. Top Stats Overview */}
-        <section>
-          <h2>stats</h2>
-          <Statistics/>
-
-        </section>
-
-       
-
-        {/* 3. Filters & Search Section */}
-        <section>
-          <h2>Problems</h2>
-          {/* <div>
-            <input
-              type="text"
-              placeholder="Search problems..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-
-            <select
-              value={selectedTopic}
-              onChange={(e) => setSelectedTopic(e.target.value)}
+    <div className="bg-[#0b0d14] text-[#eef0f6] min-h-screen font-sans bg-[radial-gradient(500px_400px_at_12%_8%,rgba(139,123,255,0.28),transparent_70%),radial-gradient(450px_400px_at_90%_30%,rgba(61,220,151,0.14),transparent_70%),radial-gradient(500px_450px_at_40%_100%,rgba(255,107,129,0.12),transparent_70%)] bg-fixed">
+      <div className="max-w-[1040px] mx-auto px-5 pt-6 pb-14">
+        {/* 1. Header / Navigation */}
+        <header className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="font-semibold tracking-wide text-base text-[#eef0f6]">
+              DSA Mentor
+            </h2>
+          </div>
+          <nav className="flex items-center gap-3.5">
+            {username && (
+              <span className="text-[#8a90a6] text-sm">
+                User: <span className="text-[#eef0f6]">{username}</span>
+              </span>
+            )}
+            <button
+              onClick={handleLogout}
+              className="text-[#8a90a6] hover:text-[#eef0f6] text-sm transition-colors cursor-pointer bg-transparent border-none p-0"
             >
+              Logout
+            </button>
+          </nav>
+        </header>
 
+        <main>
+          {/* 2. Create AI Question Card */}
+          <QuestionFrom />
 
+          {/* 3. Statistics Section */}
+          <section>
+            <h2 className="text-[15px] font-semibold mt-8 mb-3.5 text-[#eef0f6]">
+              Your Statistics
+            </h2>
+            <Statistics />
+          </section>
 
-              <option value="all">All Topics</option>
-              <option value="Arrays & Hashing">Arrays & Hashing</option>
-              <option value="Strings">Strings</option>
-              <option value="Linked List">Linked List</option>
-            </select>
-          </div> */}
-
-          {/* 4. Question Table / List */}
-          <table>
-            <thead>
-              <tr>
-                <th>SR.no</th>
-                {/* <th>Ques no</th> */}
-                <th>Question</th>
-                <th>Topic</th>
-                <th>subtopic</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>remark</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dashboardData.map((item) => (
-                <tr key={item.sr_no}>
-                  <td>{item.sr_no}</td>
-                  {/* <td>{item.ques_no}</td> */}
-                  <td>
-                    <Link to={`/problem/${item.ques_no}`}>
-                      {item.question}
-                    </Link>
-                  </td>
-                  <td>{item.topic}</td>
-                  <td>{item.subtopic || "none"}</td>
-                  <td>{new Date(item.date).toLocaleDateString()}</td>
-                  <td>{item.status ? "\u2705" : "\u274C"}</td>
-                  <td>{item.remark || "no remark yet"}</td>
-
-                </tr>
-
-
-              ))}
-
-
-
-            </tbody>
-          </table>
-        </section>
-
-
-
-      </main>
+          {/* 4. Problems Table Section */}
+          <section>
+            <h2 className="text-[15px] font-semibold mt-8 mb-3.5 text-[#eef0f6]">
+              Problems
+            </h2>
+            <div className="bg-white/[0.06] border border-white/[0.12] rounded-[20px] backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_40px_rgba(0,0,0,0.35)] p-2 pb-3.5 overflow-x-auto">
+              <table className="w-full min-w-[760px] border-collapse text-[13.5px]">
+                <thead>
+                  <tr>
+                    <th className="text-left text-[11px] uppercase tracking-[0.06em] font-medium text-[#8a90a6] px-3.5 py-3">
+                      SR.no
+                    </th>
+                    <th className="text-left text-[11px] uppercase tracking-[0.06em] font-medium text-[#8a90a6] px-3.5 py-3">
+                      Question
+                    </th>
+                    <th className="text-left text-[11px] uppercase tracking-[0.06em] font-medium text-[#8a90a6] px-3.5 py-3">
+                      Topic
+                    </th>
+                    <th className="text-left text-[11px] uppercase tracking-[0.06em] font-medium text-[#8a90a6] px-3.5 py-3">
+                      Subtopic
+                    </th>
+                    <th className="text-left text-[11px] uppercase tracking-[0.06em] font-medium text-[#8a90a6] px-3.5 py-3">
+                      Date
+                    </th>
+                    <th className="text-left text-[11px] uppercase tracking-[0.06em] font-medium text-[#8a90a6] px-3.5 py-3">
+                      Status
+                    </th>
+                    <th className="text-left text-[11px] uppercase tracking-[0.06em] font-medium text-[#8a90a6] px-3.5 py-3">
+                      Remark
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboardData.map((item) => (
+                    <tr
+                      key={item.sr_no}
+                      className="hover:bg-white/[0.03] transition-colors"
+                    >
+                      <td className="px-3.5 py-[13px] border-t border-white/[0.07] align-top text-[#8a90a6]">
+                        {item.sr_no}
+                      </td>
+                      <td className="px-3.5 py-[13px] border-t border-white/[0.07] align-top font-medium">
+                        <Link
+                          to={`/problem/${item.ques_no}`}
+                          className="hover:text-[#8b7bff] transition-colors text-[#eef0f6]"
+                        >
+                          {item.question}
+                        </Link>
+                      </td>
+                      <td className="px-3.5 py-[13px] border-t border-white/[0.07] align-top text-[#eef0f6]">
+                        {item.topic}
+                      </td>
+                      <td className="px-3.5 py-[13px] border-t border-white/[0.07] align-top text-[#8a90a6]">
+                        {item.subtopic || "none"}
+                      </td>
+                      <td className="px-3.5 py-[13px] border-t border-white/[0.07] align-top text-[#8a90a6]">
+                        {new Date(item.date).toLocaleDateString()}
+                      </td>
+                      <td className="px-3.5 py-[13px] border-t border-white/[0.07] align-top">
+                        <span
+                          className={`inline-block w-2.5 h-2.5 rounded-full ${
+                            item.status
+                              ? "bg-[#3ddc97] shadow-[0_0_10px_#3ddc97]"
+                              : "bg-[#ff6b81] shadow-[0_0_10px_#ff6b81]"
+                          }`}
+                        />
+                      </td>
+                      <td className="px-3.5 py-[13px] border-t border-white/[0.07] align-top text-[#8a90a6] text-[13px] leading-normal max-w-[340px]">
+                        {item.remark || "no remark yet"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </div>
     </div>
   );
 }

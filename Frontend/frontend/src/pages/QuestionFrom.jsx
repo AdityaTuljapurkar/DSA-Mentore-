@@ -49,35 +49,29 @@ export default function QuestionForm() {
   };
 
   return (
-    /* 50% width on medium/large screens */
-    <section className="w-full lg:w-1/2 bg-cosmic-glass backdrop-blur-xl border border-cosmic-border rounded-2xl p-5 mb-6 text-cosmic-text shadow-xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-cosmic-border">
-        <div className="flex items-center gap-2">
-          <span className="flex items-center justify-center w-6 h-6 rounded-md bg-cosmic-cyan/[0.08] text-cosmic-cyan border border-cosmic-cyan/20 text-xs">
-            ⚡
-          </span>
-          <div>
-            <h2 className="text-xs font-bold text-cosmic-text uppercase tracking-wider">
-              Create AI Question
-            </h2>
-            <p className="text-[10px] text-cosmic-muted">
-              Configure parameters to generate a new problem
-            </p>
-          </div>
+    <section className="bg-white/[0.06] border border-white/[0.12] rounded-[20px] backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_40px_rgba(0,0,0,0.35)] p-[22px] mb-6">
+      {/* Top row */}
+      <div className="flex justify-between items-center mb-[18px]">
+        <div>
+          <h2 className="text-[15px] font-semibold text-[#eef0f6]">
+            Create AI Question
+          </h2>
+          <p className="text-[12.5px] text-[#8a90a6] mt-1">
+            Configure parameters to generate a new problem
+          </p>
         </div>
-        <span className="text-[10px] uppercase font-semibold text-white bg-cosmic-violet/[0.08] px-2 py-0.5 rounded-md border border-cosmic-violet/20">
-          AI Powered
+        <span className="text-[10.5px] tracking-[0.08em] px-2.5 py-1 rounded-full border border-white/[0.12] text-[#8a90a6] uppercase font-medium">
+          AI POWERED
         </span>
       </div>
 
       {/* Feedback Alert */}
       {feedback && (
         <div
-          className={`mb-3.5 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2 ${
+          className={`mb-3.5 px-3.5 py-2 rounded-xl text-xs flex items-center gap-2 ${
             feedback.type === "success"
-              ? "bg-cosmic-success/10 border border-cosmic-success/25 text-cosmic-success"
-              : "bg-cosmic-error/10 border border-cosmic-error/25 text-cosmic-error"
+              ? "bg-[#3ddc97]/10 border border-[#3ddc97]/30 text-[#3ddc97]"
+              : "bg-[#ff6b81]/10 border border-[#ff6b81]/30 text-[#ff6b81]"
           }`}
         >
           <span>{feedback.type === "success" ? "✓" : "⚠"}</span>
@@ -85,13 +79,16 @@ export default function QuestionForm() {
         </div>
       )}
 
-      {/* Form */}
-      <form onSubmit={handle_submit} className="space-y-3.5 text-xs">
-        {/* Row 1: Topic & Subtopic */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* Form Grid */}
+      <form onSubmit={handle_submit}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {/* 1. Topic */}
           <div>
-            <label htmlFor="topic" className="block text-[11px] font-semibold text-cosmic-muted uppercase tracking-wider mb-1">
-              Topic <span className="text-cosmic-cyan">*</span>
+            <label
+              htmlFor="topic"
+              className="block text-[11px] uppercase tracking-[0.06em] text-[#8a90a6] mb-1.5"
+            >
+              Topic <span className="text-[#8b7bff]">*</span>
             </label>
             <input
               type="text"
@@ -100,12 +97,16 @@ export default function QuestionForm() {
               onChange={(e) => setTopic(e.target.value)}
               required
               placeholder="e.g. Array, Binary Search, DP"
-              className="w-full bg-black/40 border border-cosmic-border text-cosmic-text px-3 py-1.5 rounded-lg text-xs outline-none focus:border-cosmic-cyan focus:ring-1 focus:ring-cosmic-cyan transition-all placeholder:text-cosmic-muted/40"
+              className="w-full px-[13px] py-[11px] rounded-xl border border-white/[0.12] bg-white/5 text-[#eef0f6] text-sm outline-none placeholder:text-[#5f657a] focus:border-[#8b7bff] focus:ring-[3px] focus:ring-[#8b7bff]/[0.22] transition-all"
             />
           </div>
 
+          {/* 2. Subtopic */}
           <div>
-            <label htmlFor="subtopic" className="block text-[11px] font-semibold text-cosmic-muted uppercase tracking-wider mb-1">
+            <label
+              htmlFor="subtopic"
+              className="block text-[11px] uppercase tracking-[0.06em] text-[#8a90a6] mb-1.5"
+            >
               Subtopic
             </label>
             <input
@@ -114,53 +115,59 @@ export default function QuestionForm() {
               value={subtopic}
               onChange={(e) => setSubtopic(e.target.value)}
               placeholder="e.g. Sliding Window, Two Pointers"
-              className="w-full bg-black/40 border border-cosmic-border text-cosmic-text px-3 py-1.5 rounded-lg text-xs outline-none focus:border-cosmic-cyan focus:ring-1 focus:ring-cosmic-cyan transition-all placeholder:text-cosmic-muted/40"
+              className="w-full px-[13px] py-[11px] rounded-xl border border-white/[0.12] bg-white/5 text-[#eef0f6] text-sm outline-none placeholder:text-[#5f657a] focus:border-[#8b7bff] focus:ring-[3px] focus:ring-[#8b7bff]/[0.22] transition-all"
             />
           </div>
-        </div>
 
-        {/* Row 2: Level & Goal */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* 3. Difficulty */}
           <div>
-            <label htmlFor="level" className="block text-[11px] font-semibold text-cosmic-muted uppercase tracking-wider mb-1">
-              Difficulty <span className="text-cosmic-cyan">*</span>
+            <label
+              htmlFor="level"
+              className="block text-[11px] uppercase tracking-[0.06em] text-[#8a90a6] mb-1.5"
+            >
+              Difficulty <span className="text-[#8b7bff]">*</span>
             </label>
             <select
               id="level"
               value={level}
               onChange={(e) => setLevel(e.target.value)}
               required
-              className="w-full bg-black/40 border border-cosmic-border text-cosmic-text px-3 py-1.5 rounded-lg text-xs outline-none focus:border-cosmic-cyan focus:ring-1 focus:ring-cosmic-cyan transition-all cursor-pointer"
+              className="w-full px-[13px] py-[11px] rounded-xl border border-white/[0.12] bg-white/5 text-[#eef0f6] text-sm outline-none focus:border-[#8b7bff] focus:ring-[3px] focus:ring-[#8b7bff]/[0.22] cursor-pointer transition-all [&>option]:bg-[#14172a]"
             >
-              <option value="learner" className="bg-cosmic-surface">Learner (Beginner)</option>
-              <option value="easy" className="bg-cosmic-surface">Easy</option>
-              <option value="medium" className="bg-cosmic-surface">Medium</option>
-              <option value="hard" className="bg-cosmic-surface">Hard</option>
+              <option value="learner">Learner (Beginner)</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
             </select>
           </div>
 
+          {/* 4. Goal */}
           <div>
-            <label htmlFor="goal" className="block text-[11px] font-semibold text-cosmic-muted uppercase tracking-wider mb-1">
+            <label
+              htmlFor="goal"
+              className="block text-[11px] uppercase tracking-[0.06em] text-[#8a90a6] mb-1.5"
+            >
               Goal
             </label>
             <select
               id="goal"
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              className="w-full bg-black/40 border border-cosmic-border text-cosmic-text px-3 py-1.5 rounded-lg text-xs outline-none focus:border-cosmic-cyan focus:ring-1 focus:ring-cosmic-cyan transition-all cursor-pointer"
+              className="w-full px-[13px] py-[11px] rounded-xl border border-white/[0.12] bg-white/5 text-[#eef0f6] text-sm outline-none focus:border-[#8b7bff] focus:ring-[3px] focus:ring-[#8b7bff]/[0.22] cursor-pointer transition-all [&>option]:bg-[#14172a]"
             >
-              <option value="learn_basics" className="bg-cosmic-surface">Learn Basics</option>
-              <option value="interview_prep" className="bg-cosmic-surface">Interview Prep</option>
-              <option value="college_exam" className="bg-cosmic-surface">College Exam</option>
-              <option value="revision" className="bg-cosmic-surface">Revision</option>
+              <option value="learn_basics">Learn Basics</option>
+              <option value="interview_prep">Interview Prep</option>
+              <option value="college_exam">College Exam</option>
+              <option value="revision">Revision</option>
             </select>
           </div>
-        </div>
 
-        {/* Row 3: Known Concepts & Preferences */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* 5. Known Concepts */}
           <div>
-            <label htmlFor="known_topics" className="block text-[11px] font-semibold text-cosmic-muted uppercase tracking-wider mb-1">
+            <label
+              htmlFor="known_topics"
+              className="block text-[11px] uppercase tracking-[0.06em] text-[#8a90a6] mb-1.5"
+            >
               Known Concepts
             </label>
             <input
@@ -169,12 +176,16 @@ export default function QuestionForm() {
               value={known_topics}
               onChange={(e) => setKnown_topics(e.target.value)}
               placeholder="e.g. Arrays, Hash Tables"
-              className="w-full bg-black/40 border border-cosmic-border text-cosmic-text px-3 py-1.5 rounded-lg text-xs outline-none focus:border-cosmic-cyan focus:ring-1 focus:ring-cosmic-cyan transition-all placeholder:text-cosmic-muted/40"
+              className="w-full px-[13px] py-[11px] rounded-xl border border-white/[0.12] bg-white/5 text-[#eef0f6] text-sm outline-none placeholder:text-[#5f657a] focus:border-[#8b7bff] focus:ring-[3px] focus:ring-[#8b7bff]/[0.22] transition-all"
             />
           </div>
 
+          {/* 6. Preferences */}
           <div>
-            <label htmlFor="additional_info" className="block text-[11px] font-semibold text-cosmic-muted uppercase tracking-wider mb-1">
+            <label
+              htmlFor="additional_info"
+              className="block text-[11px] uppercase tracking-[0.06em] text-[#8a90a6] mb-1.5"
+            >
               Preferences
             </label>
             <input
@@ -183,29 +194,19 @@ export default function QuestionForm() {
               value={additional_info}
               onChange={(e) => setAdditional_info(e.target.value)}
               placeholder="e.g. Space complexity focus"
-              className="w-full bg-black/40 border border-cosmic-border text-cosmic-text px-3 py-1.5 rounded-lg text-xs outline-none focus:border-cosmic-cyan focus:ring-1 focus:ring-cosmic-cyan transition-all placeholder:text-cosmic-muted/40"
+              className="w-full px-[13px] py-[11px] rounded-xl border border-white/[0.12] bg-white/5 text-[#eef0f6] text-sm outline-none placeholder:text-[#5f657a] focus:border-[#8b7bff] focus:ring-[3px] focus:ring-[#8b7bff]/[0.22] transition-all"
             />
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end pt-1">
+        {/* Button Row */}
+        <div className="flex justify-end mt-[18px]">
           <button
             type="submit"
             disabled={submitQuestion}
-            className={`py-1.5 px-4 rounded-lg text-xs font-bold tracking-wide transition-all cursor-pointer flex items-center gap-1.5 ${
-              submitQuestion
-                ? "bg-cosmic-cyan/20 text-cosmic-muted cursor-not-allowed"
-                : "bg-gradient-to-r from-cosmic-cyan to-cyan-500 text-cosmic-bg hover:-translate-y-0.5 hover:shadow-[0_0_15px_rgba(0,229,255,0.25)] active:translate-y-0"
-            }`}
+            className="px-[22px] py-[11px] rounded-xl font-semibold text-white bg-gradient-to-br from-[#8b7bff] to-[#6a5cff] shadow-[0_6px_20px_rgba(106,92,255,0.4)] hover:brightness-110 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
-            {submitQuestion ? (
-              <>
-                <span className="animate-spin text-xs">⟳</span> Generating...
-              </>
-            ) : (
-              <>⚡ Generate Question</>
-            )}
+            {submitQuestion ? "Generating..." : "Generate Question"}
           </button>
         </div>
       </form>

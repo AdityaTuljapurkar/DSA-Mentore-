@@ -21,16 +21,19 @@ QUESTION_PROMPT = QUESTION_PROMPT_PATH.read_text(
 def AI_question_create(payload):
     API_KEY = os.getenv("AI_API_KEY")
 
+  
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
-        api_key=API_KEY
+        api_key=API_KEY,
+        timeout=60.0
     )
+    
 
     try:
         print("[AI] Requesting question generation...")
 
         interaction = client.chat.completions.create(
-            model="nvidia/nemotron-3.5-lightning:free",
+            model="nvidia/nemotron-3.5-super-vl:free",
             messages=[
                 {
                     "role": "system",
@@ -43,9 +46,9 @@ def AI_question_create(payload):
             ],
             
             extra_body={
-                "reasoning": {"effort": "low"}
+                "reasoning": {"enabled": True}
             },
-            response_format={"type": "json_object"}
+          
         )
 
         message = interaction.choices[0].message

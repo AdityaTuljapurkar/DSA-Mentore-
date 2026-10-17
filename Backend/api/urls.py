@@ -17,4 +17,6 @@ urlpatterns = [
     path('api/create_question/', views.create_question, name='create_question'),
     path("api/fetch_question_data/",views.fetch_question_data,name='fetch_question_data'),
     path('api/submit_question_form',views.submit_question_form),
+    path('api/status_stats_endpoint',views.status_stats_endpoint,name='status_stats_endpoint'),
+    path('api/subtopic_stats_endpoint',views.subtopic_stats_endpoint,name = 'subtopic_stats_endpoint')
 ]

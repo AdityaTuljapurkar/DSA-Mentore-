@@ -102,7 +102,7 @@ def AI_review(prompt):
 
     try:
         interaction = client.chat.completions.create(
-            model="nvidia/nemotron-3.5-lightning:free",
+            model="nvidia/nemotron-3.5-super-vl:free",
              messages=[
                       {
                         "role":'system' ,

@@ -45,7 +45,6 @@ export default function ProblemWorkspace() {
   const [reviewResult, setReviewResult] = useState(null);
   const [aiData, setAiData] = useState(() => {
     const saved = sessionStorage.getItem(`ai_review_${questionID}`);
-    console.log("stored the AI REVIEW in session storage");
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -141,11 +140,9 @@ export default function ProblemWorkspace() {
         { headers: header }
       );
       const AI_review_JSOn = extractReview(response.data);
-      console.log(response.data);
 
       setAiData(AI_review_JSOn);
       setReviewResult(response.data);
-      console.log(`Backend Responed : ${response.data}`);
       sessionStorage.setItem(`ai_review_${questionID}`, JSON.stringify(AI_review_JSOn));
     } catch (err) {
       setError(` somthing went wrong error code : ${err.data}`);
@@ -160,13 +157,11 @@ export default function ProblemWorkspace() {
     const payload = reviewResult?.message;
     if (!payload) return null;
     if (typeof payload === "object") {
-      console.log(payload);
       return payload;
     }
     if (typeof payload === "string") {
       try {
         const data = JSON.parse(payload);
-        console.log(data);
         return data;
       } catch (error) {
         console.log("AI REview ERROR in frontend : ", error);
@@ -178,10 +173,10 @@ export default function ProblemWorkspace() {
   /* ─── Loading State ──────────────────────────────────── */
   if (loading)
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cosmic-bg text-cosmic-cyan text-base font-medium">
+      <div className="flex items-center justify-center min-h-screen bg-[#060a10] text-[#4fd8ff] font-sans">
         <div className="text-center">
           <div className="text-3xl mb-2 animate-spin inline-block">⟳</div>
-          <p>Loading problem...</p>
+          <p className="text-[#8a90a6] text-sm">Loading problem...</p>
         </div>
       </div>
     );
@@ -189,12 +184,12 @@ export default function ProblemWorkspace() {
   /* ─── Error State ────────────────────────────────────── */
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-cosmic-bg text-cosmic-error gap-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#060a10] text-[#ff6b81] font-sans gap-4 px-4">
         <div className="text-5xl">⚠</div>
-        <p className="text-base max-w-md text-center">{error}</p>
+        <p className="text-base max-w-md text-center text-[#d3d6e2]">{error}</p>
         <button
           onClick={() => navigate("/dashboard")}
-          className="border border-cosmic-error text-cosmic-error bg-transparent px-4 py-2 rounded-xl text-sm font-medium hover:bg-cosmic-error/10 transition-colors cursor-pointer"
+          className="border border-[#ff6b81]/40 text-[#ff6b81] bg-white/[0.055] px-4 py-2 rounded-full text-sm font-medium hover:bg-[#ff6b81]/10 transition-colors cursor-pointer"
         >
           ← Back to Dashboard
         </button>
@@ -216,49 +211,45 @@ export default function ProblemWorkspace() {
   const issues = Array.isArray(issues_raw) ? issues_raw : [];
   const aiHints = Array.isArray(hints_raw) ? hints_raw : [];
 
-  /* ─── Main Render ────────────────────────────────────── */
   return (
-    <div className="min-h-screen bg-cosmic-bg text-cosmic-text font-sans">
-
-      {/* ═══ HEADER ═══ */}
-      <header className="flex items-center justify-between px-6 py-3 bg-cosmic-glass backdrop-blur-xl border-b border-cosmic-border sticky top-0 z-50">
+    <div className="bg-[#060a10] text-[#eceef5] min-h-screen font-sans bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px),radial-gradient(700px_520px_at_0%_100%,rgba(20,184,166,0.24),transparent_70%),radial-gradient(700px_520px_at_100%_0%,rgba(59,130,246,0.22),transparent_70%)] bg-[length:44px_44px,44px_44px,auto,auto] bg-fixed">
+      {/* ═══ 1. TOP BAR ═══ */}
+      <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-3.5 bg-[#060a10]/60 backdrop-blur-[14px] border-b border-white/[0.11]">
         <button
           onClick={() => navigate("/dashboard")}
-          className="bg-transparent border border-cosmic-border text-cosmic-cyan px-4 py-2 rounded-xl text-sm font-medium hover:bg-cosmic-cyan/[0.08] transition-colors cursor-pointer"
+          className="rounded-full px-4 py-2 text-sm text-[#4fd8ff] bg-white/[0.055] border border-white/[0.11] hover:bg-white/10 transition-colors cursor-pointer"
         >
           ← Dashboard
         </button>
-        <div className="flex gap-4 text-sm text-cosmic-muted">
-          <span className="bg-cosmic-cyan/[0.08] text-cosmic-cyan px-3 py-1 rounded-lg text-xs font-semibold">
+        <div className="flex items-center gap-2">
+          <span className="text-xs px-3 py-[5px] rounded-full border text-[#4fd8ff] border-[#4fd8ff]/35 font-medium">
             {questionData?.topic || "General"}
           </span>
-          <span className="bg-cosmic-violet/[0.08] text-cosmic-violet px-3 py-1 rounded-lg text-xs font-semibold">
+          <span className="text-xs px-3 py-[5px] rounded-full border text-[#8b7bff] border-[#8b7bff]/40 font-medium">
             #{questionData?.ques_no}
           </span>
         </div>
       </header>
 
-      {/* ═══ TWO-COLUMN GRID ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 lg:p-5 max-w-[1600px] mx-auto">
-
-        {/* ─── LEFT PANEL: Problem Description ─── */}
-        <div className="bg-cosmic-glass backdrop-blur-2xl border border-cosmic-border rounded-2xl p-6 max-h-[calc(100vh-80px)] overflow-y-auto">
-
+      {/* ═══ TWO-COLUMN SPLIT CONTAINER ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.05fr] gap-[18px] px-6 pt-[18px] pb-10 max-w-[1500px] mx-auto items-start">
+        {/* ─── 2. LEFT PANEL: Problem Card ─── */}
+        <div className="bg-white/[0.055] border border-white/[0.11] rounded-[20px] backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_40px_rgba(0,0,0,0.35)] p-[26px]">
           {/* Title */}
-          <h1 className="text-xl font-bold text-cosmic-text mb-4 leading-tight">
+          <h1 className="text-[25px] font-semibold leading-tight text-[#eceef5]">
             {questionData?.question}
           </h1>
 
-          {/* Metadata badges */}
-          <div className="flex gap-2 mb-5 flex-wrap">
-            <span className="text-xs text-cosmic-muted bg-white/[0.04] px-2.5 py-1 rounded-md">
+          {/* Time Limit & Memory Chips */}
+          <div className="mt-3 mb-1.5 flex gap-2 flex-wrap">
+            <span className="text-[12.5px] text-[#8a90a6] px-[11px] py-[5px] rounded-full bg-white/[0.06]">
               ⏱ {questionData?.timeLimit || 1.0}s
             </span>
-            <span className="text-xs text-cosmic-muted bg-white/[0.04] px-2.5 py-1 rounded-md">
+            <span className="text-[12.5px] text-[#8a90a6] px-[11px] py-[5px] rounded-full bg-white/[0.06]">
               💾 {questionData?.memoryLimit || 128} MB
             </span>
             {questionData?.subtopic && (
-              <span className="text-xs text-cosmic-violet bg-cosmic-violet/[0.08] px-2.5 py-1 rounded-md">
+              <span className="text-[12.5px] text-[#8a90a6] px-[11px] py-[5px] rounded-full bg-white/[0.06]">
                 {questionData.subtopic}
               </span>
             )}
@@ -266,283 +257,346 @@ export default function ProblemWorkspace() {
 
           {/* HTML Content from CKEditor */}
           <div
-            className="pw-html text-sm leading-relaxed"
+            className="text-[14.5px] leading-[1.7] text-[#d3d6e2] [&>p]:mt-2 [&>h2]:text-xs [&>h2]:uppercase [&>h2]:tracking-[0.09em] [&>h2]:font-semibold [&>h2]:text-[#4fd8ff] [&>h2]:mt-[26px] [&>h2]:mb-[9px] [&>h3]:text-xs [&>h3]:uppercase [&>h3]:tracking-[0.09em] [&>h3]:font-semibold [&>h3]:text-[#4fd8ff] [&>h3]:mt-[26px] [&>h3]:mb-[9px] [&>pre]:font-mono [&>pre]:text-[13px] [&>pre]:leading-[1.7] [&>pre]:bg-black/35 [&>pre]:border [&>pre]:border-white/[0.11] [&>pre]:rounded-[14px] [&>pre]:px-[18px] [&>pre]:py-4 [&>pre]:text-[#dfe2ee] [&>pre]:overflow-x-auto"
             dangerouslySetInnerHTML={{ __html: questionData?.question_content || "" }}
           />
 
-          {/* Constraints */}
+          {/* Constraints Block */}
           {questionData?.constraints && (
-            <div className="bg-black/30 border border-cosmic-border rounded-xl p-4 mt-5">
-              <div className="text-xs font-semibold text-cosmic-cyan uppercase tracking-wide mb-2">
+            <div className="mt-[26px]">
+              <div className="text-xs uppercase tracking-[0.09em] font-semibold text-[#4fd8ff] mb-[9px]">
                 Constraints
               </div>
-              <pre className="m-0 text-cosmic-muted text-xs font-mono whitespace-pre-wrap">
+              <pre className="font-mono text-[13px] leading-[1.7] bg-black/35 border border-white/[0.11] rounded-[14px] px-[18px] py-4 text-[#dfe2ee] overflow-x-auto whitespace-pre-wrap m-0">
                 {questionData.constraints}
               </pre>
             </div>
           )}
 
-          {/* Hints */}
-          <div className="mt-5">
-            <div className="text-xs font-semibold text-cosmic-muted uppercase tracking-wide mb-2.5">
-              Hints
+          {/* Hints Section */}
+          {(questionData?.hint_1 || questionData?.hint_2 || questionData?.hint_3) && (
+            <div className="mt-[26px]">
+              <div className="text-xs uppercase tracking-[0.09em] font-semibold text-[#4fd8ff] mb-[9px]">
+                Hints
+              </div>
+
+              {questionData?.hint_1 && (
+                <div className="mb-2">
+                  <button
+                    onClick={() => setShowHint1(!showHint1)}
+                    className="flex items-center justify-between w-full bg-white/[0.04] border border-white/[0.11] text-[#eceef5] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-white/[0.08] transition-colors cursor-pointer"
+                  >
+                    <span>💡 Hint 1</span>
+                    <span className="text-[#8a90a6] text-xs">{showHint1 ? "▲" : "▼"}</span>
+                  </button>
+                  {showHint1 && (
+                    <p className="px-4 py-3 text-[#8a90a6] text-[13.5px] leading-relaxed bg-white/[0.02] border-x border-b border-white/[0.11] rounded-b-xl -mt-2 mb-2">
+                      {questionData.hint_1}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {questionData?.hint_2 && (
+                <div className="mb-2">
+                  <button
+                    onClick={() => setShowHint2(!showHint2)}
+                    className="flex items-center justify-between w-full bg-white/[0.04] border border-white/[0.11] text-[#eceef5] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-white/[0.08] transition-colors cursor-pointer"
+                  >
+                    <span>💡 Hint 2</span>
+                    <span className="text-[#8a90a6] text-xs">{showHint2 ? "▲" : "▼"}</span>
+                  </button>
+                  {showHint2 && (
+                    <p className="px-4 py-3 text-[#8a90a6] text-[13.5px] leading-relaxed bg-white/[0.02] border-x border-b border-white/[0.11] rounded-b-xl -mt-2 mb-2">
+                      {questionData.hint_2}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {questionData?.hint_3 && (
+                <div className="mb-2">
+                  <button
+                    onClick={() => setShowHint3(!showHint3)}
+                    className="flex items-center justify-between w-full bg-white/[0.04] border border-white/[0.11] text-[#eceef5] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-white/[0.08] transition-colors cursor-pointer"
+                  >
+                    <span>💡 Hint 3</span>
+                    <span className="text-[#8a90a6] text-xs">{showHint3 ? "▲" : "▼"}</span>
+                  </button>
+                  {showHint3 && (
+                    <p className="px-4 py-3 text-[#8a90a6] text-[13.5px] leading-relaxed bg-white/[0.02] border-x border-b border-white/[0.11] rounded-b-xl -mt-2 mb-2">
+                      {questionData.hint_3}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
-
-            {questionData?.hint_1 && (
-              <div>
-                <button
-                  onClick={() => setShowHint1(!showHint1)}
-                  className="flex items-center justify-between w-full bg-black/20 border border-cosmic-border text-cosmic-text px-4 py-2.5 rounded-lg text-sm font-medium mb-2 hover:border-cosmic-cyan/20 transition-colors cursor-pointer"
-                >
-                  <span>💡 Hint 1</span>
-                  <span className="text-cosmic-muted">{showHint1 ? "▲" : "▼"}</span>
-                </button>
-                {showHint1 && (
-                  <p className="px-4 pb-3 text-cosmic-muted text-sm leading-relaxed">{questionData.hint_1}</p>
-                )}
-              </div>
-            )}
-
-            {questionData?.hint_2 && (
-              <div>
-                <button
-                  onClick={() => setShowHint2(!showHint2)}
-                  className="flex items-center justify-between w-full bg-black/20 border border-cosmic-border text-cosmic-text px-4 py-2.5 rounded-lg text-sm font-medium mb-2 hover:border-cosmic-cyan/20 transition-colors cursor-pointer"
-                >
-                  <span>💡 Hint 2</span>
-                  <span className="text-cosmic-muted">{showHint2 ? "▲" : "▼"}</span>
-                </button>
-                {showHint2 && (
-                  <p className="px-4 pb-3 text-cosmic-muted text-sm leading-relaxed">{questionData.hint_2}</p>
-                )}
-              </div>
-            )}
-
-            {questionData?.hint_3 && (
-              <div>
-                <button
-                  onClick={() => setShowHint3(!showHint3)}
-                  className="flex items-center justify-between w-full bg-black/20 border border-cosmic-border text-cosmic-text px-4 py-2.5 rounded-lg text-sm font-medium mb-2 hover:border-cosmic-cyan/20 transition-colors cursor-pointer"
-                >
-                  <span>💡 Hint 3</span>
-                  <span className="text-cosmic-muted">{showHint3 ? "▲" : "▼"}</span>
-                </button>
-                {showHint3 && (
-                  <p className="px-4 pb-3 text-cosmic-muted text-sm leading-relaxed">{questionData.hint_3}</p>
-                )}
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* ─── RIGHT PANEL: Editor + AI ─── */}
-        <div className="flex flex-col gap-4">
+        {/* ─── RIGHT STACK: Editor + AI Mentor Review ─── */}
+        <div className="flex flex-col gap-[18px]">
+          {/* 3. CODE EDITOR CARD */}
+          <div className="bg-white/[0.055] border border-white/[0.11] rounded-[20px] backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_40px_rgba(0,0,0,0.35)] p-[26px]">
+            {/* Header row */}
+            <div className="flex items-center gap-2.5 flex-wrap mb-4">
+              <span className="text-[15px] font-semibold text-[#eceef5] mr-auto">
+                Code Editor
+              </span>
 
-          {/* Editor panel */}
-          <div className="bg-cosmic-glass backdrop-blur-2xl border border-cosmic-border rounded-2xl p-6">
+              {/* Language select */}
+              <select
+                value={language}
+                onChange={handleLanguageChange}
+                className="px-3 py-[9px] rounded-[11px] border border-white/[0.11] bg-white/[0.06] text-[#eceef5] text-[13.5px] outline-none cursor-pointer transition-colors [&>option]:bg-[#14172a]"
+              >
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+                <option value="javascript">JavaScript</option>
+              </select>
 
-            {/* Editor toolbar */}
-            <div className="flex items-center justify-between flex-wrap gap-2.5 mb-3">
-              <div className="text-sm font-semibold">Code Editor</div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                {/* Language select */}
-                <select
-                  value={language}
-                  onChange={handleLanguageChange}
-                  className="bg-black/40 border border-cosmic-border text-cosmic-text px-3 py-1.5 rounded-lg text-sm cursor-pointer outline-none"
-                >
-                  <option value="python">Python</option>
-                  <option value="cpp">C++</option>
-                  <option value="java">Java</option>
-                  <option value="javascript">JavaScript</option>
-                </select>
+              {/* Theme select */}
+              <select
+                value={Theme}
+                onChange={(e) => setTheme(e.target.value)}
+                className="px-3 py-[9px] rounded-[11px] border border-white/[0.11] bg-white/[0.06] text-[#eceef5] text-[13.5px] outline-none cursor-pointer transition-colors [&>option]:bg-[#14172a]"
+              >
+                <option value="vs-dark">Dark</option>
+                <option value="light">Light</option>
+              </select>
 
-                {/* Theme select */}
-                <select
-                  value={Theme}
-                  onChange={(e) => setTheme(e.target.value)}
-                  className="bg-black/40 border border-cosmic-border text-cosmic-text px-3 py-1.5 rounded-lg text-sm cursor-pointer outline-none"
-                >
-                  <option value="vs-dark">Dark</option>
-                  <option value="light">Light</option>
-                </select>
+              {/* Reset button */}
+              <button
+                onClick={() => setCode(STARTER_TEMPLATES[language])}
+                className="border border-white/[0.11] rounded-[11px] px-3.5 py-[9px] text-[13.5px] text-[#8a90a6] hover:text-[#eceef5] hover:bg-white/[0.04] transition-colors cursor-pointer"
+              >
+                ↺ Reset
+              </button>
 
-                {/* Reset button */}
-                <button
-                  onClick={() => setCode(STARTER_TEMPLATES[language])}
-                  className="bg-transparent border border-cosmic-border text-cosmic-muted px-3.5 py-1.5 rounded-lg text-sm hover:text-cosmic-text hover:border-white/20 transition-colors cursor-pointer"
-                >
-                  ↺ Reset
-                </button>
-
-                {/* Submit button */}
-                <button
-                  onClick={handelSubmit}
-                  disabled={isSubmitting}
-                  className={`px-6 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all cursor-pointer ${
-                    isSubmitting
-                      ? "bg-cosmic-cyan/15 text-cosmic-muted cursor-not-allowed"
-                      : "bg-gradient-to-br from-cosmic-cyan to-cyan-600 text-cosmic-bg hover:-translate-y-0.5"
-                  }`}
-                >
-                  {isSubmitting ? "⟳ Submitting..." : "▶ Submit Code"}
-                </button>
-              </div>
+              {/* Submit Code button */}
+              <button
+                onClick={handelSubmit}
+                disabled={isSubmitting}
+                className="px-5 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-br from-[#8b7bff] to-[#6a5cff] shadow-[0_6px_20px_rgba(106,92,255,0.4)] hover:brightness-110 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {isSubmitting ? "⟳ Submitting..." : "Submit Code"}
+              </button>
             </div>
-            {/* Native HTML Collapsible Dropdown */}
-            <details className="my-2 bg-black/30 border border-cosmic-border rounded-lg p-2.5 text-xs text-cosmic-muted cursor-pointer">
-              <summary className="font-semibold text-cosmic-cyan uppercase tracking-wide select-none">
+
+            {/* Code submission format collapsible */}
+            <details className="border border-white/[0.11] rounded-xl px-3.5 py-[11px] mb-3 bg-white/[0.02] cursor-pointer">
+              <summary className="text-[11.5px] uppercase tracking-[0.08em] font-semibold text-[#4fd8ff] select-none">
                 ℹ Code Submission Format
               </summary>
-              <ul className="list-disc pl-5 mt-2 space-y-1 text-cosmic-muted">
+              <ul className="list-disc pl-5 mt-2 space-y-1 text-[13px] text-[#8a90a6]">
                 <li>Write your solution inside the required function.</li>
-                <li>Do not use <code className="text-cosmic-cyan">input()</code> unless the problem explicitly requires standard input.</li>
+                <li>
+                  Do not use <code className="text-[#4fd8ff]">input()</code> unless the problem explicitly requires standard input.
+                </li>
                 <li>Call your function with sample arguments to test your solution.</li>
                 <li>Print the returned result to verify the output.</li>
                 <li>Follow the function name and parameter format specified in the problem.</li>
               </ul>
             </details>
-            {/* Monaco Editor */}
-            <div className="rounded-xl overflow-hidden border border-cosmic-border mt-1">
+
+            {/* Editor container */}
+            <div className="rounded-[14px] border border-white/[0.11] bg-black/40 overflow-hidden max-h-[430px] font-mono text-[13.5px]">
               <Editor
-                height="450px"
+                height="420px"
                 language={language}
                 theme={Theme}
                 value={code}
                 onChange={(val) => setCode(val)}
                 options={{
-                  fontSize: 14,
+                  fontSize: 13.5,
                   minimap: { enabled: false },
                   automaticLayout: true,
+                  lineNumbersMinChars: 3,
                 }}
               />
             </div>
 
             {/* Execution Error */}
             {reviewResult?.error && (
-              <div className="bg-cosmic-error/[0.08] border border-cosmic-error/25 rounded-xl p-4 mt-4 text-cosmic-error text-sm font-mono whitespace-pre-wrap">
-                <div className="font-semibold mb-1.5">Execution Error</div>
+              <div className="bg-[#ff6b81]/[0.08] border border-[#ff6b81]/25 rounded-[14px] p-4 mt-4 text-[#ff6b81] text-sm font-mono whitespace-pre-wrap">
+                <div className="font-semibold mb-1.5 uppercase text-xs tracking-wider">
+                  Execution Error
+                </div>
                 {reviewResult.error}
               </div>
             )}
           </div>
 
-          {/* ═══ AI MENTOR PANEL ═══ */}
+          {/* 4. AI MENTOR REVIEW CARD */}
           {aiData && (
-            <div className="bg-cosmic-violet/[0.04] border border-cosmic-violet/15 rounded-2xl p-6">
-
+            <div className="bg-white/[0.055] border border-white/[0.11] rounded-[20px] backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_40px_rgba(0,0,0,0.35)] p-[26px]">
               {/* Title */}
-              <div className="text-base font-bold text-cosmic-violet mb-4 flex items-center gap-2">
-                <span className="text-lg">🤖</span>
+              <div className="text-base font-semibold text-[#8b7bff] mb-4">
                 AI Mentor Review
               </div>
 
-              {/* Review text */}
-              {/* {review_text && (
-                <div className="bg-black/25 border border-cosmic-violet/[0.12] rounded-xl p-4 mb-3">
-                  <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">Review</div>
-                  <pre className="text-cosmic-text text-sm leading-relaxed whitespace-pre-wrap m-0 font-sans">{review_text}</pre>
+              {/* Row 1: Status & Code Output */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Status Box */}
+                <div className="bg-white/[0.04] border border-white/[0.11] rounded-[14px] p-4">
+                  <div className="text-[11px] uppercase tracking-[0.09em] font-semibold text-[#8a90a6] mb-2">
+                    Status
+                  </div>
+                  <div>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-[13px] font-semibold border ${
+                        review_status === "correct" || review_status === "pass" || review_status === "passed"
+                          ? "text-[#3ddc97] bg-[#3ddc97]/[0.12] border-[#3ddc97]/30"
+                          : review_status === "partially_correct"
+                          ? "text-[#ffb84d] bg-[#ffb84d]/[0.12] border-[#ffb84d]/30"
+                          : "text-[#ff6b81] bg-[#ff6b81]/[0.12] border-[#ff6b81]/30"
+                      }`}
+                    >
+                      {review_status || "evaluated"}
+                    </span>
+                  </div>
                 </div>
-              )} */}
 
-              {/* Status + Output row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {review_status && (
-                  <div className="bg-black/25 border border-cosmic-violet/[0.12] rounded-xl p-4 mb-3">
-                    <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">Status</div>
-                    <p className={`text-sm font-semibold m-0 ${
-                      review_status === "pass" || review_status === "correct"
-                        ? "text-cosmic-success"
-                        : "text-cosmic-error"
-                    }`}>
-                      {review_status}
-                    </p>
+                {/* Code Output Box */}
+                <div className="bg-white/[0.04] border border-white/[0.11] rounded-[14px] p-4">
+                  <div className="text-[11px] uppercase tracking-[0.09em] font-semibold text-[#8a90a6] mb-2">
+                    Code Output
                   </div>
-                )}
-                {output !== undefined && output !== null && (
-                  <div className="bg-black/25 border border-cosmic-violet/[0.12] rounded-xl p-4 mb-3">
-                    <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">Code Output</div>
-                    <pre className="text-cosmic-text text-sm leading-relaxed whitespace-pre-wrap m-0 font-mono">
-                      {typeof output === "object" ? JSON.stringify(output, null, 2) : String(output)}
-                    </pre>
-                  </div>
-                )}
+                  <pre className="font-mono text-[22px] font-semibold text-[#eceef5] m-0 overflow-x-auto whitespace-pre-wrap leading-tight">
+                    {output !== undefined && output !== null
+                      ? typeof output === "object"
+                        ? JSON.stringify(output, null, 2)
+                        : String(output)
+                      : "—"}
+                  </pre>
+                </div>
               </div>
 
-              {/* Summary */}
-              {summary && (
-                <div className="bg-black/25 border border-cosmic-violet/[0.12] rounded-xl p-4 mb-3">
-                  <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">Summary</div>
-                  <pre className="text-cosmic-text text-sm leading-relaxed whitespace-pre-wrap m-0 font-sans">
-                    {typeof summary === "object" ? JSON.stringify(summary, null, 2) : summary}
-                  </pre>
+              {/* Interpretation Box */}
+              {(execution_analysis || summary) && (
+                <div className="bg-white/[0.04] border border-white/[0.11] rounded-[14px] p-4 mt-3">
+                  <div className="text-[11px] uppercase tracking-[0.09em] font-semibold text-[#8a90a6] mb-2">
+                    Interpretation
+                  </div>
+                  <p className="text-[14.5px] leading-[1.7] text-[#d3d6e2] m-0 whitespace-pre-wrap">
+                    {typeof execution_analysis === "object" && execution_analysis?.interpretation
+                      ? execution_analysis.interpretation
+                      : typeof execution_analysis === "string"
+                      ? execution_analysis
+                      : typeof summary === "string"
+                      ? summary
+                      : JSON.stringify(summary)}
+                  </p>
                 </div>
               )}
 
-              {/* Logic Analysis */}
+              {/* Logic Analysis (if available) */}
               {logic_analysis && (
-                <div className="bg-black/25 border border-cosmic-violet/[0.12] rounded-xl p-4 mb-3">
-                  <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">Logic Analysis</div>
-                  <pre className="text-cosmic-text text-sm leading-relaxed whitespace-pre-wrap m-0 font-sans">
+                <div className="bg-white/[0.04] border border-white/[0.11] rounded-[14px] p-4 mt-3">
+                  <div className="text-[11px] uppercase tracking-[0.09em] font-semibold text-[#8a90a6] mb-2">
+                    Logic Analysis
+                  </div>
+                  <p className="text-[14.5px] leading-[1.7] text-[#d3d6e2] m-0 whitespace-pre-wrap">
                     {typeof logic_analysis === "object" ? JSON.stringify(logic_analysis, null, 2) : logic_analysis}
-                  </pre>
+                  </p>
                 </div>
               )}
 
-              {/* Execution Analysis */}
-              {execution_analysis && (
-                <div className="bg-black/25 border border-cosmic-violet/[0.12] rounded-xl p-4 mb-3">
-                  <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">Execution Analysis</div>
-                  <pre className="text-cosmic-text text-sm leading-relaxed whitespace-pre-wrap m-0 font-sans">
-                    {typeof execution_analysis === "object" ? JSON.stringify(execution_analysis, null, 2) : execution_analysis}
-                  </pre>
-                </div>
-              )}
-
-              {/* Issues */}
+              {/* Issues Box */}
               {issues.length > 0 && (
-                <div className="bg-black/25 border border-cosmic-violet/[0.12] rounded-xl p-4 mb-3">
-                  <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">Issues</div>
-                  {issues.map((issue, index) => (
-                    <div key={index} className="border-b border-cosmic-violet/[0.08] pb-2.5 mb-2.5 text-sm text-cosmic-text last:border-0 last:mb-0 last:pb-0">
-                      {typeof issue === "object" && issue !== null
-                        ? Object.entries(issue).map(([key, value]) => (
-                            <p key={key} className="my-0.5 text-sm">
-                              <strong className="text-cosmic-violet">{key}:</strong>{" "}
-                              {typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)}
+                <div className="bg-white/[0.04] border border-white/[0.11] rounded-[14px] p-4 mt-3">
+                  <div className="text-[11px] uppercase tracking-[0.09em] font-semibold text-[#8a90a6] mb-2">
+                    Issues
+                  </div>
+                  <div>
+                    {issues.map((issue, idx) => {
+                      const isObj = typeof issue === "object" && issue !== null;
+                      const severity = isObj ? (issue.severity || "minor").toLowerCase() : "minor";
+                      const line = isObj ? issue.line : null;
+                      const title = isObj ? issue.title || issue.name || "" : String(issue);
+                      const description = isObj ? issue.description || issue.desc || "" : "";
+                      const counterexample = isObj ? issue.counterexample || "" : "";
+                      const isCritical = severity === "critical" || severity === "major";
+                      const borderColor = isCritical ? "border-[#ff6b81]" : "border-[#ffb84d]";
+                      const textColor = isCritical ? "text-[#ff6b81]" : "text-[#ffb84d]";
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`pl-3.5 border-l-[3px] ${borderColor} ${idx > 0 ? "mt-3.5" : ""}`}
+                        >
+                          <div className="flex items-center gap-2 text-xs text-[#8a90a6] mb-1">
+                            <span className={`uppercase font-bold tracking-[0.06em] ${textColor}`}>
+                              {severity}
+                            </span>
+                            <span>•</span>
+                            <span>{line !== null && line !== undefined ? `line ${line}` : "general"}</span>
+                          </div>
+                          {title && (
+                            <span className="block text-[14.5px] font-semibold mb-1 text-[#eceef5]">
+                              {title}
+                            </span>
+                          )}
+                          {description && (
+                            <p className="text-[13.5px] leading-[1.7] text-[#d3d6e2] m-0">
+                              {description}
                             </p>
-                          ))
-                        : <p className="m-0">{String(issue)}</p>}
-                    </div>
-                  ))}
+                          )}
+                          {counterexample && (
+                            <div className="mt-2 font-mono text-[12.5px] leading-[1.6] text-[#c9cde0] bg-black/30 rounded-[10px] px-3 py-[9px] overflow-x-auto">
+                              {typeof counterexample === "object"
+                                ? JSON.stringify(counterexample, null, 2)
+                                : counterexample}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
-              {/* AI Hints */}
+              {/* AI Hints Box */}
               {aiHints.length > 0 && (
-                <div className="bg-black/25 border border-cosmic-violet/[0.12] rounded-xl p-4 mb-3">
-                  <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">AI Hints</div>
-                  {aiHints.map((hint, index) => (
-                    <div key={index} className="border-b border-cosmic-violet/[0.08] pb-2.5 mb-2.5 text-sm text-cosmic-text last:border-0 last:mb-0 last:pb-0">
-                      {typeof hint === "object" && hint !== null
-                        ? Object.entries(hint).map(([key, value]) => (
-                            <p key={key} className="my-0.5 text-sm">
-                              <strong className="text-cosmic-cyan">{key}:</strong>{" "}
-                              {typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)}
-                            </p>
-                          ))
-                        : <p className="m-0">{String(hint)}</p>}
-                    </div>
-                  ))}
+                <div className="bg-white/[0.04] border border-white/[0.11] rounded-[14px] p-4 mt-3">
+                  <div className="text-[11px] uppercase tracking-[0.09em] font-semibold text-[#8a90a6] mb-2">
+                    AI Hints
+                  </div>
+                  <div>
+                    {aiHints.map((hint, idx) => {
+                      const isObj = typeof hint === "object" && hint !== null;
+                      const level = isObj ? hint.level || idx + 1 : idx + 1;
+                      const hintText = isObj ? hint.hint || hint.text || JSON.stringify(hint) : String(hint);
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex items-start gap-3 ${idx > 0 ? "mt-3" : ""}`}
+                        >
+                          <span className="shrink-0 w-[26px] h-[26px] rounded-full grid place-items-center text-xs font-bold text-[#4fd8ff] border border-[#4fd8ff]/40">
+                            {level}
+                          </span>
+                          <p className="text-[13.5px] leading-[1.7] text-[#d3d6e2] m-0 flex-1">
+                            {hintText}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
-              {/* Next Step */}
+              {/* Next Step Box */}
               {next_step && (
-                <div className="bg-cosmic-violet/[0.06] border border-cosmic-violet/20 rounded-xl p-4 mb-3">
-                  <div className="text-[11px] font-bold text-cosmic-violet uppercase tracking-widest mb-2">Next Step</div>
-                  <p className="text-cosmic-violet text-sm font-semibold m-0 leading-relaxed whitespace-pre-wrap">
-                    {typeof next_step === "object" ? JSON.stringify(next_step) : next_step}
+                <div className="bg-white/[0.04] border border-white/[0.11] rounded-[14px] p-4 mt-3">
+                  <div className="text-[11px] uppercase tracking-[0.09em] font-semibold text-[#8a90a6] mb-2">
+                    Next Step
+                  </div>
+                  <p className="text-[14.5px] leading-[1.7] text-[#d3d6e2] m-0 whitespace-pre-wrap">
+                    {typeof next_step === "object"
+                      ? next_step.step || JSON.stringify(next_step)
+                      : next_step}
                   </p>
                 </div>
               )}

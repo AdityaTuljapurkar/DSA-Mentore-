@@ -421,3 +421,29 @@ def fetch_question_data(request):
         return Response(db_response,status=status.HTTP_200_OK)
     except Exception as e : 
         print("[Question DB] id filter error : ",e)
+
+
+from ._statistics import status_stats , subtopic_stats
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def status_stats_endpoint(request):
+    try :
+        val = status_stats(request.user)
+        if val : 
+            return Response(val,status=status.HTTP_200_OK)
+        else : 
+            return Response(val,status=status.HTTP_204_NO_CONTENT)
+    except Exception as e : 
+        print(f"[status_stats_endpoint] error : {e}")
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def subtopic_stats_endpoint(request):
+    try : 
+        val = subtopic_stats(request.user)
+        if val : 
+            return Response(val,status=status.HTTP_200_OK)
+        else : 
+            return Response(val,status=status.HTTP_204_NO_CONTENT)
+    except Exception as e : 
+        print(f"[subtopic_stats_endpoint] error : {e}")
