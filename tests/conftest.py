@@ -1,8 +1,5 @@
 import pytest
 from playwright.sync_api import sync_playwright
-import os 
-
-
 
 @pytest.fixture
 def page():
@@ -14,11 +11,3 @@ def page():
         yield page
         context.close()
         browser.close()
-
-def pytest_addoption(parser: pytest.Parser):
-    parser.addoption(
-        "--single_login",
-        action = "store" ,
-    default = False , 
-    help = "Reuse saved login state: true or false",
-    )

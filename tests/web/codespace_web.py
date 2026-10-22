@@ -43,24 +43,28 @@ def verify_python_template(page):
 
 
 def remove_older_code(page):    
+
     page.locator(".monaco-editor").first.click()
     page.keyboard.press("ControlOrMeta+a")
     page.keyboard.press("Backspace")
+    # time.sleep(2)
+    
     
 
-def add_custom_data_in_code(page,data):
+def add_custom_data_in_code(page, data):
     page.locator(".monaco-editor").first.click()
-    page.locator(".monaco-editor").first.type(str(data))
-    page.get_by_role("button", name="Submit Code").click()
+    page.keyboard.insert_text(str(data))
+    with page.expect_response(lambda r: "api/submissions" in r.url, timeout=30000):
+        page.get_by_role("button", name="Submit Code").click()
     
  
 def reload_page(page):
     page.reload()
     print("Page reloaded")
 
-def check_custom_data(page,data):
-    Page = page.locator(".monaco-editor")
-    expect(Page.get_by_text(data)).to_be_visible()
+def check_custom_data(page, data):
+    editor = page.locator(".monaco-editor")
+    expect(editor).to_contain_text(data)
     print("found custom code")
     
 
@@ -102,7 +106,7 @@ def setup_ai_unauthorized_error(page:Page):
 def click_submit_button(page:Page):
     page.get_by_role("button", name="Submit Code").click() 
     print("clicked submmit button")
-    time.sleep(15)
+    # time.sleep(15)
   
 
 def review_status_displays(page:Page,data):
@@ -116,4 +120,8 @@ def review_status_error(page:Page,error):
 def check_redirect_login(page:Page):
     expect(page).to_have_url("http://localhost:5173/login")
     print("redirect login verified")
+
+def reset_code(page:Page):
+    page.get_by_role("button", name="↺ Reset").click()
+    print("Reset button is been clicked")
    

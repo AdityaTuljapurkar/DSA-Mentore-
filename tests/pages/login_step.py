@@ -2,7 +2,7 @@ from web import login_web
 from pytest_bdd import scenarios, given, when, then, parsers
 
 # Connect this step definition file to the feature file
-scenarios('../feature/login.feature')
+scenarios('../features/login.feature')
 
 @given("user navigated to the login page")
 def step_to_navigate_login(page):

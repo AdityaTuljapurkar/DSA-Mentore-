@@ -12,25 +12,29 @@ Background:
 
 Scenario: user changes the code language c++ 
     When user clicks on language "cpp" dropdown 
+    When user resets the code space
     Then Cpp code Template is loaded 
 
 Scenario: user changes the code language java
     When user clicks on language "java" dropdown 
+    When user resets the code space
     Then Java code Template is loaded 
     
 Scenario: user changes the code language javascript
     When user clicks on language "javascript" dropdown 
+    When user resets the code space
     Then Javascript code Template is loaded 
 
 Scenario: user changes the code language python
     When user clicks on language "python" dropdown 
+    When user resets the code space
     Then Python code Template is loaded 
     
 Scenario: user checks redis cache reload 
     When user removes the older code
-    When user enter custom data "lets check the redis"
+    When user enter custom data "lets_check_the_redis"
     When user reloads the page 
-    Then user finds custom data "lets check the redis"
+    Then user finds custom data "lets_check_the_redis"
 
 Scenario: user changes the color theme to light 
     When user selects the light theme 

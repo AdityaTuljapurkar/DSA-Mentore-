@@ -10,5 +10,11 @@ Background:
 
 Scenario: user navigates to question 
     When user clicks a question "Reverse Using Stack" in dashboard
+
+Scenario: Seeded problem verification and cleanup
+    Given user seeds a new question via API
+    When user navigates to the seeded problem page
+    Then problem title, time limit, and memory limit match the seeded data
+    And the seeded question is cleaned up from the database
     
-    
+

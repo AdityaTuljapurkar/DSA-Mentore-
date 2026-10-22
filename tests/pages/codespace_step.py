@@ -116,3 +116,8 @@ def review_error_display(page,error):
 @then("user redirects to login")
 def check_redirect_login(page):
     codespace_web.check_redirect_login(page)
+
+
+@when("user resets the code space")
+def click_reset_button(page):
+    codespace_web.reset_code(page)
