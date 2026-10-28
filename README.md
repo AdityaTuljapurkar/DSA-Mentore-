@@ -442,7 +442,6 @@ Sample output:
 
 ---
 
-## 📄 License & Attribution
 
-Developed as an advanced algorithmic learning and automated evaluation platform by **Aditya**.  
-Licensed under the [MIT License](LICENSE).
+
+
